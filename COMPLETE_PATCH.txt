@@ -1,0 +1,191 @@
+// COMPLETE PATCH - Apply these changes to integrate the Expense Feature
+
+// ============================================================================
+// FILE: src/lib/employeeData.ts
+// ============================================================================
+
+// ADD AFTER: export type WorkStatus = 'Ongoing' | 'Completed'
+export type ExpenseStatus = 'Pending' | 'Approved' | 'Rejected'
+
+// ADD AFTER: export interface WorkDetail { ... }
+export interface Expense {
+  ExpenseID: string
+  EmployeeID: string
+  Date: string
+  Amount: number
+  Description: string
+  Category: string
+  Status: ExpenseStatus
+  ApprovedBy: string
+}
+
+// MODIFY: export interface WorkbookData
+export interface WorkbookData {
+  employees: Employee[]
+  companies: Company[]
+  attendance: Attendance[]
+  salaries: Salary[]
+  advances: Advance[]
+  workDetails: WorkDetail[]
+  expenses: Expense[]  // 
+}
+
+// MODIFY: In normalizeWorkbookData function, ADD AFTER workDetails normalization:
+    expenses: (partial.expenses ?? []).map((expense) => ({
+      ExpenseID: safeText(expense.ExpenseID),
+      EmployeeID: safeText(expense.EmployeeID),
+      Date: safeText(expense.Date),
+      Amount: toNumber(expense.Amount),
+      Description: safeText(expense.Description),
+      Category: safeText(expense.Category),
+      Status:
+        expense.Status === 'Approved'
+          ? 'Approved'
+          : expense.Status === 'Rejected'
+            ? 'Rejected'
+            : 'Pending',
+      ApprovedBy: safeText(expense.ApprovedBy),
+    })),
+
+// MODIFY: In createSeedData function, ADD in the return statement:
+    expenses: [],
+
+
+// ============================================================================
+// FILE: src/App.tsx
+// ============================================================================
+
+// ADD TO IMPORTS:
+import { Expense, ExpenseStatus } from './lib/employeeData'
+import { ExpenseManager } from './components/ExpenseManager'
+
+// ADD TO STATE (with other useState declarations):
+  const [expenses, setExpenses] = useState<Expense[]>([])
+
+// ADD TO useEffect THAT LOADS WORKBOOK DATA:
+  useEffect(() => {
+    // ... existing code ...
+    if (data.expenses) {
+      setExpenses(data.expenses)
+    }
+  }, [])
+
+// ADD FUNCTION (with other save functions like saveAdvance, etc):
+  function saveExpenses(updated: Expense[]) {
+    setExpenses(updated)
+    if (workbook) {
+      saveState({
+        ...workbook,
+        expenses: updated,
+      })
+    }
+  }
+
+// ADD TO renderTabs() FUNCTION (button for Expenses tab):
+        <button
+          type="button"
+          className={`tab-button ${currentTab === 'Expenses' ? 'active' : ''}`}
+          onClick={() => setCurrentTab('Expenses')}
+        >
+          Expenses
+        </button>
+
+// ADD TO TAB SWITCH STATEMENT (case for Expenses):
+      case 'Expenses':
+        return renderExpenses()
+
+// ADD NEW FUNCTION (before the return statement):
+  function renderExpenses() {
+    if (!workbook || !currentUser) {
+      return null
+    }
+
+    const isAdmin = currentUser.Role === 'Admin'
+    const selectedEmployeeId = isAdmin ? (activeEmployeeFilter || '') : currentUser.EmployeeID
+
+    if (!isAdmin && !selectedEmployeeId) {
+      return (
+        <div className="tab-content">
+          <p>Please select an employee to view expenses.</p>
+        </div>
+      )
+    }
+
+    return (
+      <div className="tab-content">
+        <ExpenseManager
+          expenses={expenses}
+          employeeId={selectedEmployeeId}
+          isAdmin={isAdmin}
+          currentUserId={currentUser.EmployeeID}
+          onExpenseChange={saveExpenses}
+        />
+      </div>
+    )
+  }
+
+
+// ============================================================================
+// FILE: vite.config.ts (optional - for Excel persistence)
+// ============================================================================
+
+// IN THE POST /api/state HANDLER, ADD:
+
+const expenses = (parsed.expenses ?? []).map((exp: any) => ({
+  ExpenseID: exp.ExpenseID ?? '',
+  EmployeeID: exp.EmployeeID ?? '',
+  Date: exp.Date ?? '',
+  Amount: Number(exp.Amount) || 0,
+  Description: exp.Description ?? '',
+  Category: exp.Category ?? 'Other',
+  Status: exp.Status ?? 'Pending',
+  ApprovedBy: exp.ApprovedBy ?? '',
+}))
+
+// THEN UPDATE THE workbookState:
+const workbookState = {
+  employees: [...],
+  companies: [...],
+  attendance: [...],
+  salaries: [...],
+  advances: [...],
+  workDetails: [...],
+  expenses: expenses,  // 
+}
+
+
+// ============================================================================
+// FILES ALREADY CREATED (Copy these files to your project):
+// ============================================================================
+
+// 1. src/lib/expenseData.ts - Contains utility functions
+//    Functions: calculateExpenseDeduction(), getTotalApprovedExpenses(), etc.
+
+// 2. src/components/ExpenseManager.tsx - React component for UI
+//    Handles expense form, approval, rejection, and display
+
+
+// ============================================================================
+// TESTING CHECKLIST
+// ============================================================================
+
+/*
+After applying all changes, test:
+
+1. [] npm install (if needed)
+2. [] npm run dev (app starts without errors)
+3. [] Login as employee (EMP002/meera@123)
+4. [] See Expenses tab in navigation
+5. [] Click Expenses tab - see empty list
+6. [] Fill expense form: Category=Travel, Amount=500, Description=test
+7. [] Click "Submit Expense"
+8. [] See expense in list with status "Pending"
+9. [] Logout and login as admin (EMP001/admin123)
+10. [] Go to Expenses tab
+11. [] See employee's pending expense
+12. [] Click "Approve" button
+13. [] See status change to "Approved"
+14. [] npm run build (build succeeds)
+
+If all tests pass, the feature is working!
+*/
