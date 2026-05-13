@@ -52,6 +52,7 @@ type AttendanceDraft = {
 type WorkDraft = {
   WorkID: string
   EmployeeID: string
+  CompanyID: string
   WorkTitle: string
   StartDate: string
   EndDate: string
@@ -108,6 +109,7 @@ const EMPTY_ATTENDANCE: AttendanceDraft = {
 const EMPTY_WORK: WorkDraft = {
   WorkID: '',
   EmployeeID: '',
+  CompanyID: '',
   WorkTitle: '',
   StartDate: todayValue(),
   EndDate: todayValue(),
@@ -524,6 +526,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     setWorkDraft({
       WorkID: record.WorkID,
       EmployeeID: record.EmployeeID,
+      CompanyID: record.CompanyID,
       WorkTitle: record.WorkTitle,
       StartDate: record.StartDate,
       EndDate: record.EndDate,
@@ -545,6 +548,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     const nextWork: WorkDetail = {
       WorkID: workId,
       EmployeeID: workDraft.EmployeeID || currentUser.EmployeeID,
+      CompanyID: workDraft.CompanyID || workbook.companies[0]?.CompanyID || '',
       WorkTitle: workDraft.WorkTitle.trim(),
       StartDate: workDraft.StartDate,
       EndDate: workDraft.EndDate,
@@ -710,7 +714,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     return (
       <div className="grid grid-cols-1 gap-4">
         <Panel title={editingEmployeeId ? 'Edit employee' : 'Add employee'} subtitle="Every field is synchronized to the workbook.">
-          <form className="grid gap-3" onSubmit={saveEmployee}>
+          <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" onSubmit={saveEmployee}>
             <label>
               EmployeeID
               <input
@@ -770,7 +774,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 required
               />
             </label>
-            <div className="flex flex-wrap gap-2.5 mt-1">
+            <div className="flex flex-wrap gap-2.5 mt-1 lg:col-span-3">
               <button type="submit" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-red-950 font-bold bg-gradient-glass hover:-translate-y-0.5">{editingEmployeeId ? 'Save changes' : 'Create employee'}</button>
               <button type="button" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-text-light bg-white/8 hover:-translate-y-0.5" onClick={() => resetEmployeeDraft()}>
                 Clear
@@ -993,12 +997,12 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           <Panel title={editingWorkId ? 'Edit work' : 'Add work'} subtitle="Update work amount, received amount, and the remaining balance.">
             <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" onSubmit={saveWork}>
               <label>
-                Employee
-                <select value={workDraft.EmployeeID} onChange={(event) => setWorkDraft((current) => ({ ...current, EmployeeID: event.target.value }))} required>
-                  <option value="">Select employee</option>
-                  {workbook.employees.map((employee) => (
-                    <option key={employee.EmployeeID} value={employee.EmployeeID}>
-                      {employee.EmployeeName}
+                CompanyID
+                <select value={workDraft.CompanyID} onChange={(event) => setWorkDraft((current) => ({ ...current, CompanyID: event.target.value }))} required>
+                  <option value="">Select company</option>
+                  {workbook.companies.map((company) => (
+                    <option key={company.CompanyID} value={company.CompanyID}>
+                      {company.CompanyID}
                     </option>
                   ))}
                 </select>
@@ -1059,7 +1063,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               <thead>
                 <tr>
                   <th>WorkID</th>
-                  <th>Employee</th>
+                  <th>CompanyID</th>
                   <th>WorkTitle</th>
                   <th>StartDate</th>
                   <th>EndDate</th>
@@ -1072,12 +1076,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               </thead>
               <tbody>
                 {visibleWorks.map((work) => {
-                  const employee = workbook.employees.find((item) => item.EmployeeID === work.EmployeeID)
-
                   return (
                     <tr key={work.WorkID}>
                       <td>{work.WorkID}</td>
-                      <td>{employee?.EmployeeName ?? work.EmployeeID}</td>
+                      <td>{work.CompanyID}</td>
                       <td>{work.WorkTitle}</td>
                       <td>{formatDate(work.StartDate)}</td>
                       <td>{formatDate(work.EndDate)}</td>

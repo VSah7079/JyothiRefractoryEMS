@@ -62,6 +62,7 @@ export interface Advance {
 export interface WorkDetail {
   WorkID: string
   EmployeeID: string
+  CompanyID: string
   WorkTitle: string
   StartDate: string
   EndDate: string
@@ -244,6 +245,7 @@ export function normalizeWorkbookData(partial: Partial<WorkbookData>): WorkbookD
     workDetails: (partial.workDetails ?? []).map((work) => ({
       WorkID: safeText(work.WorkID),
       EmployeeID: safeText(work.EmployeeID),
+      CompanyID: safeText(work.CompanyID),
       WorkTitle: safeText(work.WorkTitle),
       StartDate: safeText(work.StartDate),
       EndDate: safeText(work.EndDate),
@@ -405,6 +407,7 @@ function createSeedData(): WorkbookData {
       {
         WorkID: 'WRK001',
         EmployeeID: 'EMP002',
+        CompanyID: 'CMP001',
         WorkTitle: 'Kiln lining repair',
         StartDate: '2026-05-01',
         EndDate: '2026-05-12',
@@ -416,6 +419,7 @@ function createSeedData(): WorkbookData {
       {
         WorkID: 'WRK002',
         EmployeeID: 'EMP003',
+        CompanyID: 'CMP002',
         WorkTitle: 'Dispatch bay rework',
         StartDate: '2026-04-28',
         EndDate: '2026-05-06',
@@ -427,6 +431,7 @@ function createSeedData(): WorkbookData {
       {
         WorkID: 'WRK003',
         EmployeeID: 'EMP001',
+        CompanyID: 'CMP001',
         WorkTitle: 'Raw mix inspection',
         StartDate: '2026-05-03',
         EndDate: '2026-05-16',
@@ -438,6 +443,7 @@ function createSeedData(): WorkbookData {
       {
         WorkID: 'WRK004',
         EmployeeID: 'EMP004',
+        CompanyID: 'CMP002',
         WorkTitle: 'Warehouse inventory audit',
         StartDate: '2026-04-20',
         EndDate: '2026-05-02',
@@ -466,6 +472,7 @@ function groupKeys(records: Array<{ EmployeeID: string; Date?: string; Month?: s
 
 export function recalculateDerivedData(data: WorkbookData, previous?: WorkbookData): WorkbookData {
   const normalized = normalizeWorkbookData(data)
+  const defaultCompanyId = normalized.companies[0]?.CompanyID ?? ''
   const previousSalaryStatus = new Map(
     (previous?.salaries ?? []).map((row) => [`${row.EmployeeID}|${row.Month}`, row.PaidStatus]),
   )
@@ -509,6 +516,7 @@ export function recalculateDerivedData(data: WorkbookData, previous?: WorkbookDa
 
       return {
         ...work,
+        CompanyID: work.CompanyID || defaultCompanyId,
         PendingAmount: pendingAmount,
         Status: (pendingAmount > 0 ? 'Ongoing' : 'Completed') as WorkStatus,
       }

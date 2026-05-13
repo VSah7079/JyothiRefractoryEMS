@@ -52,6 +52,7 @@ type AttendanceDraft = {
 type WorkDraft = {
   WorkID: string
   EmployeeID: string
+  CompanyID: string
   WorkTitle: string
   StartDate: string
   EndDate: string
@@ -110,6 +111,7 @@ const EMPTY_ATTENDANCE: AttendanceDraft = {
 const EMPTY_WORK: WorkDraft = {
   WorkID: '',
   EmployeeID: '',
+  CompanyID: '',
   WorkTitle: '',
   StartDate: todayValue(),
   EndDate: todayValue(),
@@ -560,6 +562,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     setWorkDraft({
       WorkID: record.WorkID,
       EmployeeID: record.EmployeeID,
+      CompanyID: record.CompanyID,
       WorkTitle: record.WorkTitle,
       StartDate: record.StartDate,
       EndDate: record.EndDate,
@@ -581,6 +584,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     const nextWork: WorkDetail = {
       WorkID: workId,
       EmployeeID: workDraft.EmployeeID || currentUser.EmployeeID,
+      CompanyID: workDraft.CompanyID || workbook.companies[0]?.CompanyID || '',
       WorkTitle: workDraft.WorkTitle.trim(),
       StartDate: workDraft.StartDate,
       EndDate: workDraft.EndDate,
