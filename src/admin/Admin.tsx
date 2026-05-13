@@ -130,7 +130,7 @@ function statusClass(value: string) {
 }
 
 function Badge({ value }: { value: string }) {
-  return <span className={`inline-flex justify-center items-center py-1.5 px-3 rounded-full text-xs-small font-bold tracking-status uppercase ${statusClass(value) === 'active' || statusClass(value) === 'approved' || statusClass(value) === 'paid' ? 'text-status-success bg-status-success-bg' : 'text-text-light bg-status-neutral'}`}>{value}</span>
+  return <span className={`inline-flex justify-center items-center py-1.5 px-3 rounded-full text-xs font-bold uppercase ${statusClass(value) === 'active' || statusClass(value) === 'approved' || statusClass(value) === 'paid' ? 'text-green-700 bg-green-100' : 'text-gray-600 bg-gray-100'}`}>{value}</span>
 }
 
 function Panel({
@@ -145,7 +145,7 @@ function Panel({
   action?: ReactNode
 }) {
   return (
-    <section className="rounded-24 p-5 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg">
+    <section className="rounded-lg p-5 bg-white border border-slate-200 shadow-md">
       <header className="mb-4 grid gap-3 md:flex md:items-start md:justify-between md:gap-4">
         <div>
           <h2>{title}</h2>
@@ -160,10 +160,10 @@ function Panel({
 
 function MetricCard({ label, value, hint }: { label: string; value: ReactNode; hint: string }) {
   return (
-    <article className="rounded-18 p-3.5 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg flex-1 min-w-fit">
-      <span className="text-xs">{label}</span>
-      <strong className="text-lg block">{value}</strong>
-      <p className="text-xs text-text-softer mt-1">{hint}</p>
+    <article className="rounded-md p-3.5 bg-white border border-slate-200 shadow-sm flex-1 min-w-fit">
+      <span className="text-xs text-gray-500">{label}</span>
+      <strong className="text-lg block text-main-text">{value}</strong>
+      <p className="text-xs text-small-text mt-1">{hint}</p>
     </article>
   )
 }
@@ -175,12 +175,12 @@ function BarChart({ data }: { data: Array<{ label: string; value: number }> }) {
     <div className="grid gap-3.5">
       {data.map((entry) => (
         <div key={entry.label} className="grid gap-2">
-          <div className="flex justify-between items-center gap-3 text-text-secondary">
+          <div className="flex justify-between items-center gap-3 text-main-text">
             <span>{entry.label}</span>
             <strong>{formatNumber(entry.value)}</strong>
           </div>
-          <div className="w-full h-3 overflow-hidden rounded-full bg-white/[0.07]">
-            <div className="h-full rounded-full bg-gradient-bar" style={{ width: `${(entry.value / max) * 100}%` }} />
+          <div className="w-full h-3 overflow-hidden rounded-full bg-gray-100">
+            <div className="h-full rounded-full bg-gradient-to-r from-indigo to-purple" style={{ width: `${(entry.value / max) * 100}%` }} />
           </div>
         </div>
       ))}
@@ -716,7 +716,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
         <Panel title={editingEmployeeId ? 'Edit employee' : 'Add employee'} subtitle="Every field is synchronized to the workbook.">
           <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" onSubmit={saveEmployee}>
             <label>
-              EmployeeID
+              Employee ID
               <input
                 value={employeeDraft.EmployeeID}
                 onChange={(event) => setEmployeeDraft((current) => ({ ...current, EmployeeID: event.target.value }))}
@@ -724,7 +724,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               />
             </label>
             <label>
-              EmployeeName
+              Employee Name
               <input
                 value={employeeDraft.EmployeeName}
                 onChange={(event) => setEmployeeDraft((current) => ({ ...current, EmployeeName: event.target.value }))}
@@ -740,7 +740,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               />
             </label>
             <label>
-              PerdayPay
+              Per-day Pay
               <input
                 type="number"
                 value={employeeDraft.PerdayPay}
@@ -775,8 +775,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               />
             </label>
             <div className="flex flex-wrap gap-2.5 mt-1 lg:col-span-3">
-              <button type="submit" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-red-950 font-bold bg-gradient-glass hover:-translate-y-0.5">{editingEmployeeId ? 'Save changes' : 'Create employee'}</button>
-              <button type="button" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-text-light bg-white/8 hover:-translate-y-0.5" onClick={() => resetEmployeeDraft()}>
+              <button type="submit" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer no-underline transition-all duration-150 font-bold text-white bg-indigo hover:bg-indigoHover">{editingEmployeeId ? 'Save changes' : 'Create employee'}</button>
+              <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer no-underline transition-all duration-150 text-main-text bg-gray-100 hover:bg-gray-200" onClick={() => resetEmployeeDraft()}>
                 Clear
               </button>
             </div>
@@ -786,16 +786,16 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
         <Panel
           title="Employees"
           subtitle="Add, edit, delete, toggle status, and reset passwords."
-          action={<input className="w-full box-border rounded-14 border border-white/12 bg-black/60 py-3.25 px-3.75 text-text-light outline-none md:w-72" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search employees" />}
+          action={<input className="w-full box-border rounded-md border border-input-border bg-white py-2 px-3 text-main-text outline-none focus:border-indigo focus:ring-1 focus:ring-indigo/20 md:w-72" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search employees" />}
         >
           <div className="border border-border-subtle rounded-18 overflow-auto">
             <table>
               <thead>
                 <tr>
-                  <th>EmployeeID</th>
+                  <th>Employee ID</th>
                   <th>Name</th>
                   <th>Phone</th>
-                  <th>PerdayPay</th>
+                  <th>Per-day Pay</th>
                   <th>Role</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -820,16 +820,16 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                       </td>
                       <td>
                         <div className="flex flex-wrap gap-2.5">
-                          <button type="button" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-red-950 font-bold bg-gradient-glass hover:-translate-y-0.5" onClick={() => resetEmployeeDraft(employee)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150" onClick={() => resetEmployeeDraft(employee)}>
                             Edit
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-red-950 font-bold bg-gradient-glass hover:-translate-y-0.5" onClick={() => toggleEmployeeStatus(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-purple hover:bg-purple/90 transition-all duration-150" onClick={() => toggleEmployeeStatus(employee.EmployeeID)}>
                             {employee.Status === 'Active' ? 'Deactivate' : 'Activate'}
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-red-950 font-bold bg-gradient-glass hover:-translate-y-0.5" onClick={() => resetPassword(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-purple hover:bg-purple/90 transition-all duration-150" onClick={() => resetPassword(employee.EmployeeID)}>
                             Reset
                           </button>
-                          <button type="button" className="bg-linear-to-r from-danger to-danger-hover inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit hover:-translate-y-0.5" onClick={() => removeEmployee(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-red-600 hover:bg-red-700 transition-all duration-150" onClick={() => removeEmployee(employee.EmployeeID)}>
                             Delete
                           </button>
                         </div>
@@ -887,7 +887,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               <input value={attendanceDraft.Location} onChange={(event) => setAttendanceDraft((current) => ({ ...current, Location: event.target.value }))} required />
             </label>
             <label>
-              WorkedHour
+              Worked Hours
               <input
                 type="number"
                 min={0}
@@ -898,10 +898,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               />
             </label>
             <div className="flex flex-wrap gap-2.5 mt-1">
-              <button type="submit" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-red-950 font-bold bg-gradient-glass hover:-translate-y-0.5">Save attendance</button>
+              <button type="submit" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150">Save attendance</button>
               <button
                 type="button"
-                className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-text-light bg-white/8 hover:-translate-y-0.5"
+                className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-main-text font-bold bg-gray-100 hover:bg-gray-200 transition-all duration-150"
                 onClick={() =>
                   setAttendanceDraft({
                     ...EMPTY_ATTENDANCE,
@@ -918,7 +918,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
         <Panel title="Attendance" subtitle="Add self or team attendance and filter the register.">
           <div className="flex flex-wrap gap-2.5">
-            <select className="w-full box-border py-3.25 px-3.75 text-text-light rounded-14 outline-none bg-black/60 border border-white/12" value={selectedEmployeeFilter} onChange={(event) => setSelectedEmployeeFilter(event.target.value)}>
+            <select className="w-full box-border py-2 px-3 text-main-text rounded-md outline-none bg-white border border-input-border focus:border-indigo focus:ring-1 focus:ring-indigo/20" value={selectedEmployeeFilter} onChange={(event) => setSelectedEmployeeFilter(event.target.value)}>
               <option value="all">All employees</option>
               {workbook.employees.map((employee) => (
                 <option key={employee.EmployeeID} value={employee.EmployeeID}>
@@ -947,13 +947,13 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             <table>
               <thead>
                 <tr>
-                  <th>AttendanceID</th>
+                  <th>Attendance ID</th>
                   <th>Employee</th>
                   <th>Date</th>
                   <th>Company</th>
                   <th>Location</th>
-                  <th>WorkedHour</th>
-                  <th>Addedby</th>
+                  <th>Worked Hours</th>
+                  <th>Added By</th>
                 </tr>
               </thead>
               <tbody>
@@ -995,9 +995,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
       <div className="grid grid-cols-1 gap-4">
         {isAdmin ? (
           <Panel title={editingWorkId ? 'Edit work' : 'Add work'} subtitle="Update work amount, received amount, and the remaining balance.">
-            <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" onSubmit={saveWork}>
+            <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveWork}>
               <label>
-                CompanyID
+                Company ID
                 <select value={workDraft.CompanyID} onChange={(event) => setWorkDraft((current) => ({ ...current, CompanyID: event.target.value }))} required>
                   <option value="">Select company</option>
                   {workbook.companies.map((company) => (
@@ -1008,23 +1008,23 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 </select>
               </label>
               <label>
-                WorkTitle
+                Work Title
                 <input value={workDraft.WorkTitle} onChange={(event) => setWorkDraft((current) => ({ ...current, WorkTitle: event.target.value }))} required />
               </label>
               <label>
-                StartDate
+                Start Date
                 <input type="date" value={workDraft.StartDate} onChange={(event) => setWorkDraft((current) => ({ ...current, StartDate: event.target.value }))} required />
               </label>
               <label>
-                EndDate
+                End Date
                 <input type="date" value={workDraft.EndDate} onChange={(event) => setWorkDraft((current) => ({ ...current, EndDate: event.target.value }))} required />
               </label>
               <label>
-                WorkAmount
+                Work Amount
                 <input type="number" min={0} value={workDraft.WorkAmount} onChange={(event) => setWorkDraft((current) => ({ ...current, WorkAmount: Number(event.target.value) }))} required />
               </label>
               <label>
-                ReceivedAmount
+                Received Amount
                 <input type="number" min={0} value={workDraft.ReceivedAmount} onChange={(event) => setWorkDraft((current) => ({ ...current, ReceivedAmount: Number(event.target.value) }))} required />
               </label>
               <label>
@@ -1035,8 +1035,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 </select>
               </label>
               <div className="flex flex-wrap gap-2.5 mt-1">
-                <button type="submit" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-red-950 font-bold bg-gradient-glass hover:-translate-y-0.5">{editingWorkId ? 'Save work' : 'Add work'}</button>
-                <button type="button" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-text-light bg-white/8 hover:-translate-y-0.5" onClick={() => resetWorkDraft()}>
+                <button type="submit" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer no-underline transition-all duration-150 font-bold text-white bg-indigo hover:bg-indigoHover">{editingWorkId ? 'Save work' : 'Add work'}</button>
+                <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer no-underline transition-all duration-150 text-main-text bg-gray-100 hover:bg-gray-200" onClick={() => resetWorkDraft()}>
                   Clear
                 </button>
               </div>
@@ -1045,7 +1045,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
         ) : (
           <Panel title="Work summary" subtitle="Your assigned work items and their current progress.">
             <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-summary">
-              <article className="rounded-24 p-5 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg">
+              <article className="rounded-lg p-5 bg-white border border-slate-200 shadow-sm">
                 <span>Assigned works</span>
                 <strong>{visibleWorks.length}</strong>
               </article>
@@ -1062,14 +1062,14 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             <table>
               <thead>
                 <tr>
-                  <th>WorkID</th>
-                  <th>CompanyID</th>
-                  <th>WorkTitle</th>
-                  <th>StartDate</th>
-                  <th>EndDate</th>
-                  <th>WorkAmount</th>
-                  <th>ReceivedAmount</th>
-                  <th>PendingAmount</th>
+                  <th>Work ID</th>
+                  <th>Company ID</th>
+                  <th>Work Title</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Work Amount</th>
+                  <th>Received Amount</th>
+                  <th>Pending Amount</th>
                   <th>Status</th>
                   {isAdmin && <th>Actions</th>}
                 </tr>
@@ -1117,7 +1117,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     return (
       <div className="grid grid-cols-1 gap-4">
         <Panel title="Request advance" subtitle="Create a new request for the current employee or another selected worker.">
-          <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" onSubmit={saveAdvance}>
+          <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveAdvance}>
             <label>
               Employee
               <select value={advanceDraft.EmployeeID} onChange={(event) => setAdvanceDraft((current) => ({ ...current, EmployeeID: event.target.value }))}>
@@ -1142,10 +1142,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               <textarea rows={4} value={advanceDraft.Reason} onChange={(event) => setAdvanceDraft((current) => ({ ...current, Reason: event.target.value }))} required />
             </label>
             <div className="flex flex-wrap gap-2.5 mt-1">
-              <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-14 cursor-pointer no-underline transition-all duration-150 font-inherit text-sm text-red-950 font-bold bg-gradient-glass hover:-translate-y-0.5">Submit request</button>
+              <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md cursor-pointer text-sm font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150">Submit request</button>
               <button
                 type="button"
-                className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-14 cursor-pointer no-underline transition-all duration-150 font-inherit text-sm text-text-light bg-white/8 hover:-translate-y-0.5"
+                className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md cursor-pointer text-sm font-bold text-main-text bg-gray-100 hover:bg-gray-200 transition-all duration-150"
                 onClick={() =>
                   setAdvanceDraft({
                     ...EMPTY_ADVANCE,
@@ -1164,13 +1164,13 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             <table>
               <thead>
                 <tr>
-                  <th>AdvanceID</th>
+                  <th>Advance ID</th>
                   <th>Date</th>
                   <th>Employee</th>
-                  <th>AdvanceAmount</th>
+                  <th>Advance Amount</th>
                   <th>Reason</th>
                   <th>Status</th>
-                  <th>ApprovedBy</th>
+                  <th>Approved By</th>
                   {isAdmin && <th>Actions</th>}
                 </tr>
               </thead>
@@ -1195,7 +1195,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                             <button type="button" onClick={() => decideAdvance(advance.AdvanceID, 'Approved')}>
                               Approve
                             </button>
-                            <button type="button" className="danger" onClick={() => decideAdvance(advance.AdvanceID, 'Rejected')}>
+                            <button type="button" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md cursor-pointer text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-all duration-150" onClick={() => decideAdvance(advance.AdvanceID, 'Rejected')}>
                               Reject
                             </button>
                           </div>
@@ -1257,14 +1257,14 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             <table>
               <thead>
                 <tr>
-                  <th>SalaryID</th>
+                  <th>Salary ID</th>
                   <th>Employee</th>
                   <th>Month</th>
-                  <th>TotalAttendance</th>
-                  <th>NetSalary</th>
-                  <th>AdvanceDeductions</th>
-                  <th>NetPayable</th>
-                  <th>PaidStatus</th>
+                  <th>Total Attendance</th>
+                  <th>Net Salary</th>
+                  <th>Advance Deductions</th>
+                  <th>Net Payable</th>
+                  <th>Paid Status</th>
                   {isAdmin && <th>Actions</th>}
                 </tr>
               </thead>
@@ -1289,12 +1289,12 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                           <div className="flex flex-wrap gap-2.5">
                             <button
                               type="button"
-                              className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-14 cursor-pointer no-underline transition-all duration-150 font-inherit text-sm text-red-950 font-bold bg-gradient-glass hover:-translate-y-0.5"
+                              className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md cursor-pointer text-sm font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150"
                               onClick={() => setSalaryStatus(salary.SalaryID, 'Paid')}
                             >
                               Mark paid
                             </button>
-                            <button type="button" className="danger" onClick={() => setSalaryStatus(salary.SalaryID, 'Pending')}>
+                            <button type="button" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md cursor-pointer text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-all duration-150" onClick={() => setSalaryStatus(salary.SalaryID, 'Pending')}>
                               Mark pending
                             </button>
                           </div>
@@ -1322,11 +1322,11 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           {selectedCompany ? (
             <form className="grid grid-cols-1 gap-3 sm:grid-cols-2" onSubmit={saveCompany}>
               <label>
-                CompanyID
+                Company ID
                 <input value={selectedCompany.CompanyID} readOnly />
               </label>
               <label>
-                CompanyName
+                Company Name
                 <input value={selectedCompany.CompanyName} onChange={(event) => updateSelectedCompany('CompanyName', event.target.value)} readOnly={!isAdmin} />
               </label>
               <label>
@@ -1334,7 +1334,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 <textarea rows={3} value={selectedCompany.Address} onChange={(event) => updateSelectedCompany('Address', event.target.value)} readOnly={!isAdmin} />
               </label>
               <label>
-                WorkAddress
+                Work Address
                 <textarea rows={3} value={selectedCompany.WorkAddress} onChange={(event) => updateSelectedCompany('WorkAddress', event.target.value)} readOnly={!isAdmin} />
               </label>
               <label>
@@ -1351,7 +1351,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               </label>
               {isAdmin && (
                 <div className="flex flex-wrap gap-2 mt-1 sm:col-span-2">
-                  <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-14 cursor-pointer no-underline transition-all duration-150 font-inherit text-sm text-red-950 font-bold bg-gradient-glass hover:-translate-y-0.5">Save company</button>
+                  <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md cursor-pointer text-sm font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150">Save company</button>
                 </div>
               )}
             </form>
@@ -1378,7 +1378,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           </div>
           {isAdmin && (
             <div className="flex flex-wrap gap-2 mt-3">
-              <a className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-14 cursor-pointer no-underline transition-all duration-150 font-inherit text-sm text-red-950 font-bold bg-gradient-glass hover:-translate-y-0.5" href="/api/download">
+              <a className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md cursor-pointer text-sm font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150" href="/api/download">
                 Download Excel
               </a>
             </div>
@@ -1467,40 +1467,35 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   const topActions = isAdmin ? (
     <div className="flex flex-wrap gap-2.5">
       <Badge value={saving ? 'Syncing' : 'Live'} />
-      <button type="button" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-text-light bg-white/8 hover:-translate-y-0.5" onClick={() => setWorkbook((current) => (current ? recalculateDerivedData(current, current) : current))}>
+      <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer font-bold text-main-text bg-gray-100 hover:bg-gray-200 transition-all duration-150" onClick={() => setWorkbook((current) => (current ? recalculateDerivedData(current, current) : current))}>
         Refresh totals
       </button>
-      <a className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-red-950 font-bold bg-gradient-glass hover:-translate-y-0.5" href="/api/download">
+      <a className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150" href="/api/download">
         Download Excel
       </a>
     </div>
   ) : (
     <div className="flex flex-wrap gap-2.5">
       <Badge value={saving ? 'Syncing' : 'Live'} />
-      <button type="button" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-text-light bg-white/8 hover:-translate-y-0.5" onClick={() => setWorkbook((current) => (current ? recalculateDerivedData(current, current) : current))}>
+      <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer font-bold text-main-text bg-gray-100 hover:bg-gray-200 transition-all duration-150" onClick={() => setWorkbook((current) => (current ? recalculateDerivedData(current, current) : current))}>
         Refresh totals
       </button>
     </div>
   )
 
   return (
-    <div className="bg-app-shell grid min-h-screen-vh grid-cols-1 text-text-light lg:grid-cols-[320px_minmax(0,1fr)]">
-      <aside className="bg-sidebar-shell flex flex-col gap-5 border-b border-gold-soft p-4 backdrop-blur-xl sm:p-6 lg:sticky lg:top-0 lg:h-dvh lg:overflow-y-auto lg:border-b-0 lg:border-r lg:border-r-gold-soft lg:p-7 lg:self-start">
-        <div className="flex items-center gap-3.5 p-4.5 rounded-24 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg">
-          <span className="grid place-items-center w-14 h-14 rounded-18 font-black tracking-widest text-neutral-950" style={{background: 'linear-gradient(135deg, #f9d76a, #b8891a)'}}>JR</span>
-          <div>
-            <h1>Work ledger</h1>
-            <p>Excel-backed employee management</p>
+    <div className="bg-[#F8FAFC] grid min-h-screen-vh grid-cols-1 text-[#0F172A] lg:grid-cols-[320px_minmax(0,1fr)]">
+      <aside className="bg-gradient-to-b from-[#6366F1] to-[#8B5CF6] flex flex-col gap-5 p-4 sm:p-6 lg:sticky lg:top-0 lg:h-dvh lg:overflow-y-auto lg:p-7 lg:self-start">
+        <div className="flex items-center gap-3.5 p-4 rounded-lg bg-white border border-[#E2E8F0] shadow-sm">
+          <span className="grid place-items-center w-12 h-12 rounded-md font-bold tracking-wider text-white bg-white/20" >JR</span>
+          <div className="text-white text-sm">
+            <span className="inline-flex mb-0.5 text-xs font-semibold opacity-80">Logged in as</span>
+            <strong className="block">{currentUser.EmployeeName}</strong>
+            <p className="text-xs opacity-75">{currentUser.EmployeeID}</p>
           </div>
-        </div>
-
-        <div className="grid items-start gap-4 rounded-22 border border-border-light bg-bg-panel p-4.5 shadow-glass backdrop-blur-lg md:flex md:justify-between">
-          <div>
-            <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Logged in as</span>
-            <strong>{currentUser.EmployeeName}</strong>
-            <p>{currentUser.EmployeeID}</p>
+          <div className="ml-auto">
+            <Badge value={currentUser.Status} />
           </div>
-          <Badge value={currentUser.Status} />
         </div>
 
         <nav className="grid gap-2.5">
@@ -1508,7 +1503,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             <button
               key={tab.id}
               type="button"
-              className={activeTab === tab.id ? 'inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-left text-neutral-950 font-bold bg-gradient-glass' : 'inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-left text-text-light/88 bg-white/5 hover:border-gold-soft hover:bg-white/8'}
+              className={activeTab === tab.id ? 'inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-left text-white font-bold bg-indigo' : 'inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-left text-main-text font-bold bg-gray-100 hover:bg-gray-200'}
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}
@@ -1517,7 +1512,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
         </nav>
 
         <div className="mt-auto pt-4 border-t border-white/10">
-          <button type="button" className="inline-flex w-full justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-text-light bg-white/8 hover:-translate-y-0.5" onClick={signOut}>
+          <button type="button" className="inline-flex w-full justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer font-bold text-white bg-red-600 hover:bg-red-700 transition-all duration-150" onClick={signOut}>
             Switch account
           </button>
         </div>

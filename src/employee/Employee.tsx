@@ -771,16 +771,16 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                       </td>
                       <td>
                         <div className="flex flex-wrap gap-2.5">
-                          <button type="button" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-neutral-950 font-bold bg-gradient-glass hover:-translate-y-0.5" onClick={() => resetEmployeeDraft(employee)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150" onClick={() => resetEmployeeDraft(employee)}>
                             Edit
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-neutral-950 font-bold bg-gradient-glass hover:-translate-y-0.5" onClick={() => toggleEmployeeStatus(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-purple hover:bg-purple/90 transition-all duration-150" onClick={() => toggleEmployeeStatus(employee.EmployeeID)}>
                             {employee.Status === 'Active' ? 'Deactivate' : 'Activate'}
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-neutral-950 font-bold bg-gradient-glass hover:-translate-y-0.5" onClick={() => resetPassword(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-purple hover:bg-purple/90 transition-all duration-150" onClick={() => resetPassword(employee.EmployeeID)}>
                             Reset
                           </button>
-                          <button type="button" className="bg-linear-to-r from-danger to-danger-hover inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit hover:-translate-y-0.5" onClick={() => removeEmployee(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-red-600 hover:bg-red-700 transition-all duration-150" onClick={() => removeEmployee(employee.EmployeeID)}>
                             Delete
                           </button>
                         </div>
@@ -854,7 +854,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               />
             </label>
             <div className="flex flex-wrap gap-2.5 mt-1">
-              <button type="submit" className="inline-flex justify-center items-center py-2.25 px-4 border-0 rounded-16 cursor-pointer no-underline transition-all duration-150 font-inherit text-neutral-950 font-bold bg-gradient-glass hover:-translate-y-0.5">{editingEmployeeId ? 'Save changes' : 'Create employee'}</button>
+              <button type="submit" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150">{editingEmployeeId ? 'Save changes' : 'Create employee'}</button>
               <button type="button" className="btn-ghost-gold inline-flex items-center justify-center rounded-16 py-2.25 px-4 font-inherit" onClick={() => resetEmployeeDraft()}>
                 Clear
               </button>
@@ -919,7 +919,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               />
             </label>
             <div className="flex flex-wrap gap-2.5 mt-1">
-              <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-14 text-sm cursor-pointer no-underline transition-all duration-150 font-inherit text-neutral-950 font-bold bg-gradient-glass hover:-translate-y-0.5">Save attendance</button>
+              <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md text-sm cursor-pointer font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150">Save attendance</button>
               <button
                 type="button"
                 className="btn-ghost-gold inline-flex items-center justify-center rounded-14 py-1.5 px-3 text-sm font-inherit"
@@ -1056,7 +1056,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 </select>
               </label>
               <div className="flex flex-wrap gap-2.5 mt-1">
-                <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-14 text-sm cursor-pointer no-underline transition-all duration-150 font-inherit text-neutral-950 font-bold bg-gradient-glass hover:-translate-y-0.5">{editingWorkId ? 'Save work' : 'Add work'}</button>
+                <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md text-sm cursor-pointer font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150">{editingWorkId ? 'Save work' : 'Add work'}</button>
                 <button type="button" className="btn-ghost-gold inline-flex items-center justify-center rounded-14 py-1.5 px-3 text-sm font-inherit" onClick={() => resetWorkDraft()}>
                   Clear
                 </button>
@@ -1165,7 +1165,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               <textarea rows={4} value={advanceDraft.Reason} onChange={(event) => setAdvanceDraft((current) => ({ ...current, Reason: event.target.value }))} required />
             </label>
             <div className="flex flex-wrap gap-2.5 mt-1 sm:col-span-2 lg:col-span-3">
-              <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-14 text-sm cursor-pointer no-underline transition-all duration-150 font-inherit text-neutral-950 font-bold bg-gradient-glass hover:-translate-y-0.5">Submit request</button>
+              <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md text-sm cursor-pointer font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150">Submit request</button>
               <button
                 type="button"
                 className="btn-ghost-gold inline-flex items-center justify-center rounded-14 py-1.5 px-3 text-sm font-inherit"
@@ -1369,7 +1369,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               </label>
               {isAdmin && (
                 <div className="flex flex-wrap gap-2.5 mt-1">
-                  <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-14 text-sm cursor-pointer no-underline transition-all duration-150 font-inherit text-neutral-950 font-bold bg-gradient-glass hover:-translate-y-0.5">Save company</button>
+                  <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md text-sm cursor-pointer font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150">Save company</button>
                 </div>
               )}
             </form>
@@ -1397,7 +1397,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           {isAdmin && (
             <div className="flex flex-wrap gap-2.5 mt-3.5">
               <a
-                className="inline-flex items-center justify-center rounded-16 border-0 bg-gradient-glass py-2.25 px-4 font-inherit font-bold text-neutral-950 no-underline transition-all duration-150 hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center rounded-md border-0 bg-indigo py-2 px-4 font-bold text-white no-underline transition-all duration-150 hover:bg-indigoHover"
                 href="/api/download"
               >
                 Download Excel
@@ -1494,7 +1494,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
         Refresh totals
       </button>
       <a
-        className="inline-flex items-center justify-center rounded-16 border-0 bg-gradient-glass py-2.25 px-4 font-inherit font-bold text-neutral-950 no-underline transition-all duration-150 hover:-translate-y-0.5"
+        className="inline-flex items-center justify-center rounded-md border-0 bg-indigo py-2 px-4 font-bold text-white no-underline transition-all duration-150 hover:bg-indigoHover"
         href="/api/download"
       >
         Download Excel
@@ -1514,31 +1514,31 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   )
 
   return (
-    <div className="bg-app-shell grid min-h-screen-vh min-w-0 grid-cols-1 text-text-light lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+    <div className="bg-[#F8FAFC] grid min-h-screen-vh min-w-0 grid-cols-1 text-[#0F172A] lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
       {sidebarOpen && <div className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />}
-      <aside className={`bg-sidebar-shell fixed inset-y-0 left-0 z-40 w-80 max-w-full flex-col gap-4 border-r border-gold-soft p-4 backdrop-blur-xl transition-transform duration-200 sm:gap-5 sm:p-6 lg:w-auto lg:sticky lg:top-0 lg:h-dvh lg:max-h-screen lg:overflow-y-auto lg:border-r-amber-500/20 lg:p-7 lg:self-start lg:translate-x-0 ${sidebarOpen ? 'flex translate-x-0' : 'flex -translate-x-full lg:translate-x-0'}`}>
-        <div className="flex items-center gap-3 rounded-24 border border-border-light bg-bg-panel p-4 shadow-glass backdrop-blur-lg sm:gap-3.5 sm:p-4.5">
-          <span className="grid size-12 shrink-0 place-items-center rounded-18 bg-gradient-glass font-black tracking-widest text-neutral-950 sm:size-14">
+      <aside className={`bg-gradient-to-b from-[#6366F1] to-[#8B5CF6] fixed inset-y-0 left-0 z-40 w-80 max-w-full flex-col gap-4 p-4 transition-transform duration-200 sm:gap-5 sm:p-6 lg:w-auto lg:sticky lg:top-0 lg:h-dvh lg:max-h-screen lg:overflow-y-auto lg:p-7 lg:self-start lg:translate-x-0 ${sidebarOpen ? 'flex translate-x-0' : 'flex -translate-x-full lg:translate-x-0'}`}>
+        <div className="flex items-center gap-3 rounded-lg border border-white/20 bg-white/10 p-4 shadow-sm sm:gap-3.5 sm:p-4.5 backdrop-blur-sm">
+          <span className="grid size-12 shrink-0 place-items-center rounded-md bg-white/20 font-black tracking-widest text-white sm:size-14">
             JR
           </span>
-          <div className="min-w-0">
+          <div className="min-w-0 text-white">
             <h1 className="text-lg font-semibold leading-tight sm:text-xl">{isAdmin ? 'Work ledger' : 'My workspace'}</h1>
             <p className="text-text-softer mt-0.5 text-xs leading-snug sm:text-sm">
               {isAdmin ? 'Excel-backed employee management' : 'Attendance, work, salary & requests'}
             </p>
           </div>
-          <button type="button" className="ml-auto shrink-0 rounded-12 p-2 text-text-light hover:bg-white/10 lg:hidden" onClick={() => setSidebarOpen(false)} title="Close menu">
+          <button type="button" className="ml-auto shrink-0 rounded-md p-2 text-white hover:bg-white/10 lg:hidden" onClick={() => setSidebarOpen(false)} title="Close menu">
             <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <div className="flex items-start justify-between gap-3 rounded-22 border border-border-light bg-bg-panel p-4 shadow-glass backdrop-blur-lg sm:gap-4 sm:p-4.5">
-          <div className="min-w-0">
-            <span className="text-accent-gold mb-1.5 inline-flex text-xs uppercase tracking-widest">Logged in as</span>
+        <div className="flex items-start justify-between gap-3 rounded-lg border border-white/20 bg-white/10 p-4 shadow-sm sm:gap-4 sm:p-4.5 backdrop-blur-sm">
+          <div className="min-w-0 text-white">
+            <span className="mb-1.5 inline-flex text-xs font-semibold uppercase opacity-80">Logged in as</span>
             <strong className="block truncate text-[0.95rem] sm:text-base">{currentUser.EmployeeName}</strong>
-            <p className="text-text-softer truncate text-sm">{currentUser.EmployeeID}</p>
+            <p className="truncate text-sm opacity-75">{currentUser.EmployeeID}</p>
           </div>
           <Badge value={currentUser.Status} />
         </div>
@@ -1550,8 +1550,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               type="button"
               className={
                 activeTab === tab.id
-                  ? 'w-full rounded-14 border-0 bg-gradient-glass py-2.75 px-4 text-left font-bold text-neutral-950 no-underline transition-all duration-150 shadow-sm'
-                  : 'w-full rounded-14 border border-transparent py-2.75 px-4 text-left font-inherit text-text-light/90 no-underline transition-all duration-150 hover:border-gold-soft hover:bg-white/6'
+                  ? 'w-full rounded-md border-0 bg-white py-2 px-4 text-left font-bold text-indigo transition-all duration-150 shadow-sm'
+                  : 'w-full rounded-md border border-white/20 py-2 px-4 text-left font-semibold text-white/80 transition-all duration-150 hover:border-white/40 hover:bg-white/10'
               }
               onClick={() => {
                 setActiveTab(tab.id)
