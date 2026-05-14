@@ -550,6 +550,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     })
   }
 
+  // Work-related functions (kept for potential future use)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function resetWorkDraft(record?: WorkDetail) {
     if (!record) {
       setWorkDraft(EMPTY_WORK)
