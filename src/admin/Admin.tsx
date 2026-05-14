@@ -145,11 +145,11 @@ function Panel({
   action?: ReactNode
 }) {
   return (
-    <section className="rounded-lg p-5 bg-white border border-slate-200 shadow-md">
-      <header className="mb-4 grid gap-3 md:flex md:items-start md:justify-between md:gap-4">
+    <section className="rounded-lg p-6 bg-white border border-[#E9D5FF] shadow-sm">
+      <header className="mb-6 grid gap-3 md:flex md:items-start md:justify-between md:gap-4">
         <div>
-          <h2>{title}</h2>
-          <p>{subtitle}</p>
+          <h2 className="text-xl font-bold text-[#3B0764] mb-1">{title}</h2>
+          <p className="text-sm text-[#4C1D95]">{subtitle}</p>
         </div>
         {action}
       </header>
@@ -160,10 +160,10 @@ function Panel({
 
 function MetricCard({ label, value, hint }: { label: string; value: ReactNode; hint: string }) {
   return (
-    <article className="rounded-md p-3.5 bg-white border border-slate-200 shadow-sm flex-1 min-w-fit">
-      <span className="text-xs text-gray-500">{label}</span>
-      <strong className="text-lg block text-main-text">{value}</strong>
-      <p className="text-xs text-small-text mt-1">{hint}</p>
+    <article className="rounded-md p-4 bg-white border border-[#E9D5FF] shadow-sm flex-1 min-w-fit">
+      <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest">{label}</span>
+      <strong className="text-2xl block text-[#3B0764] mt-2">{value}</strong>
+      <p className="text-xs text-[#4C1D95] mt-2">{hint}</p>
     </article>
   )
 }
@@ -676,7 +676,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     }
 
     return (
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-card">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-card">
         <Panel title="Attendance trend" subtitle="Employee wise attendance footprint for the selected period.">
           <BarChart data={attendanceSeries} />
         </Panel>
@@ -687,18 +687,18 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           <BarChart data={workSeries} />
         </Panel>
         <Panel title="Quick summary" subtitle="Operational numbers filtered to the active login.">
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-summary">
-            <article>
-              <span>Current attendance</span>
-              <strong>{summary.currentAttendance}</strong>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-summary">
+            <article className="text-center">
+              <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest block mb-2">Current attendance</span>
+              <strong className="text-3xl text-[#3B0764]">{summary.currentAttendance}</strong>
             </article>
-            <article>
-              <span>Net payable</span>
-              <strong>{formatCurrency(summary.currentNetPayable)}</strong>
+            <article className="text-center">
+              <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest block mb-2">Net payable</span>
+              <strong className="text-3xl text-[#3B0764]">{formatCurrency(summary.currentNetPayable)}</strong>
             </article>
-            <article>
-              <span>Current month</span>
-              <strong>{formatMonth(currentMonth)}</strong>
+            <article className="text-center">
+              <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest block mb-2">Current month</span>
+              <strong className="text-3xl text-[#3B0764]">{formatMonth(currentMonth)}</strong>
             </article>
           </div>
         </Panel>
@@ -712,9 +712,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     }
 
     return (
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-6">
         <Panel title={editingEmployeeId ? 'Edit employee' : 'Add employee'} subtitle="Every field is synchronized to the workbook.">
-          <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" onSubmit={saveEmployee}>
+          <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveEmployee}>
             <label>
               Employee ID
               <input
@@ -775,8 +775,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               />
             </label>
             <div className="flex flex-wrap gap-2.5 mt-1 lg:col-span-3">
-              <button type="submit" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer no-underline transition-all duration-150 font-bold text-white bg-indigo hover:bg-indigoHover">{editingEmployeeId ? 'Save changes' : 'Create employee'}</button>
-              <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer no-underline transition-all duration-150 text-main-text bg-gray-100 hover:bg-gray-200" onClick={() => resetEmployeeDraft()}>
+              <button type="submit" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold transition-colors duration-150 text-white bg-[#7C3AED] hover:bg-[#6D28D9]">{editingEmployeeId ? 'Save changes' : 'Create employee'}</button>
+              <button type="button" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold transition-colors duration-150 text-[#4C1D95] bg-gray-100 hover:bg-gray-200" onClick={() => resetEmployeeDraft()}>
                 Clear
               </button>
             </div>
@@ -786,9 +786,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
         <Panel
           title="Employees"
           subtitle="Add, edit, delete, toggle status, and reset passwords."
-          action={<input className="w-full box-border rounded-md border border-input-border bg-white py-2 px-3 text-main-text outline-none focus:border-indigo focus:ring-1 focus:ring-indigo/20 md:w-72" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search employees" />}
+          action={<input className="w-full box-border rounded-md border border-[#D8B4FE] bg-white py-2 px-3 text-[#4C1D95] outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20 md:w-72" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search employees" />}
         >
-          <div className="border border-border-subtle rounded-18 overflow-auto">
+          <div className="border border-[#E9D5FF] rounded-lg overflow-auto shadow-sm">
             <table>
               <thead>
                 <tr>
@@ -820,16 +820,16 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                       </td>
                       <td>
                         <div className="flex flex-wrap gap-2.5">
-                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150" onClick={() => resetEmployeeDraft(employee)}>
+                          <button type="button" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]" onClick={() => resetEmployeeDraft(employee)}>
                             Edit
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-[#EC4899] hover:bg-[#DB2777] transition-all duration-150" onClick={() => toggleEmployeeStatus(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#EC4899] hover:bg-[#DB2777]" onClick={() => toggleEmployeeStatus(employee.EmployeeID)}>
                             {employee.Status === 'Active' ? 'Deactivate' : 'Activate'}
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-[#EC4899] hover:bg-[#DB2777] transition-all duration-150" onClick={() => resetPassword(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#EC4899] hover:bg-[#DB2777]" onClick={() => resetPassword(employee.EmployeeID)}>
                             Reset
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-red-600 hover:bg-red-700 transition-all duration-150" onClick={() => removeEmployee(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-red-600 hover:bg-red-700" onClick={() => removeEmployee(employee.EmployeeID)}>
                             Delete
                           </button>
                         </div>
@@ -850,9 +850,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     }
 
     return (
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-6">
         <Panel title="Add attendance" subtitle="The logged-in user can create an entry for self or others.">
-          <form className="grid grid-cols-1 sm:grid-cols-3 gap-3" onSubmit={saveAttendance}>
+          <form className="grid grid-cols-1 sm:grid-cols-3 gap-4" onSubmit={saveAttendance}>
             <label>
               Employee
               <select
@@ -898,10 +898,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               />
             </label>
             <div className="flex flex-wrap gap-2.5 mt-1 sm:col-span-3">
-              <button type="submit" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150">Save attendance</button>
+              <button type="submit" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]">Save attendance</button>
               <button
                 type="button"
-                className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-main-text font-bold bg-gray-100 hover:bg-gray-200 transition-all duration-150"
+                className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-[#4C1D95] bg-gray-100 hover:bg-gray-200"
                 onClick={() =>
                   setAttendanceDraft({
                     ...EMPTY_ATTENDANCE,
@@ -992,7 +992,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     }
 
     return (
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-6">
         {isAdmin ? (
           <Panel title={editingWorkId ? 'Edit work' : 'Add work'} subtitle="Update work amount, received amount, and the remaining balance.">
             <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveWork}>
@@ -1034,9 +1034,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                   <option value="Completed">Completed</option>
                 </select>
               </label>
-              <div className="flex flex-wrap gap-2.5 mt-1">
-                <button type="submit" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer no-underline transition-all duration-150 font-bold text-white bg-indigo hover:bg-indigoHover">{editingWorkId ? 'Save work' : 'Add work'}</button>
-                <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer no-underline transition-all duration-150 text-main-text bg-gray-100 hover:bg-gray-200" onClick={() => resetWorkDraft()}>
+              <div className="flex flex-wrap gap-2.5 mt-1 lg:col-span-3">
+                <button type="submit" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]">{editingWorkId ? 'Save work' : 'Add work'}</button>
+                <button type="button" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-[#4C1D95] bg-gray-100 hover:bg-gray-200" onClick={() => resetWorkDraft()}>
                   Clear
                 </button>
               </div>
@@ -1115,7 +1115,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     }
 
     return (
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-6">
         <Panel title="Request advance" subtitle="Create a new request for the current employee or another selected worker.">
           <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveAdvance}>
             <label>
@@ -1141,11 +1141,11 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               Reason
               <textarea rows={4} value={advanceDraft.Reason} onChange={(event) => setAdvanceDraft((current) => ({ ...current, Reason: event.target.value }))} required />
             </label>
-            <div className="flex flex-wrap gap-2.5 mt-1">
-              <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md cursor-pointer text-sm font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150">Submit request</button>
+            <div className="flex flex-wrap gap-2.5 mt-1 lg:col-span-3">
+              <button type="submit" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]">Submit request</button>
               <button
                 type="button"
-                className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md cursor-pointer text-sm font-bold text-main-text bg-gray-100 hover:bg-gray-200 transition-all duration-150"
+                className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-[#4C1D95] bg-gray-100 hover:bg-gray-200"
                 onClick={() =>
                   setAdvanceDraft({
                     ...EMPTY_ADVANCE,
@@ -1220,7 +1220,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     const monthRows = visibleSalaries.filter((salary) => salary.Month === selectedMonthFilter)
 
     return (
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-6">
         <Panel title="Salary" subtitle="Current and historical salary rows are derived from attendance and approved advances.">
           <div className="flex flex-wrap gap-2.5">
             <select value={selectedMonthFilter} onChange={(event) => setSelectedMonthFilter(event.target.value)}>
@@ -1232,10 +1232,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             </select>
           </div>
 
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-summary mt-4">
-            <article className="rounded-24 p-5 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg">
-              <span>Total attendance</span>
-              <strong>{monthRows.reduce((sum, row) => sum + row.TotalAttendance, 0)}</strong>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-summary mt-6">
+            <article className="rounded-lg p-5 bg-white border border-[#E9D5FF] shadow-sm">
+              <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest block mb-2">Total attendance</span>
+              <strong className="text-2xl text-[#3B0764] block">{monthRows.reduce((sum, row) => sum + row.TotalAttendance, 0)}</strong>
             </article>
             <article>
               <span>Gross salary</span>
@@ -1317,10 +1317,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     }
 
     return (
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-6">
         <Panel title="Company details" subtitle="Admins can update company details directly in the workbook.">
           {selectedCompany ? (
-            <form className="grid grid-cols-1 gap-3 sm:grid-cols-2" onSubmit={saveCompany}>
+            <form className="grid grid-cols-1 gap-4 sm:grid-cols-2" onSubmit={saveCompany}>
               <label>
                 Company ID
                 <input value={selectedCompany.CompanyID} readOnly />
@@ -1350,8 +1350,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 <input type="email" value={selectedCompany.Email} onChange={(event) => updateSelectedCompany('Email', event.target.value)} readOnly={!isAdmin} />
               </label>
               {isAdmin && (
-                <div className="flex flex-wrap gap-2 mt-1 sm:col-span-2">
-                  <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md cursor-pointer text-sm font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150">Save company</button>
+              <div className="flex flex-wrap gap-2 mt-1 sm:col-span-2">
+                  <button type="submit" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]">Save company</button>
                 </div>
               )}
             </form>
@@ -1498,12 +1498,12 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           </div>
         </div>
 
-        <nav className="grid gap-2.5">
+        <nav className="grid gap-2">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
-              className={activeTab === tab.id ? 'inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-left text-white font-bold bg-indigo' : 'inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-left text-main-text font-bold bg-gray-100 hover:bg-gray-200'}
+              className={activeTab === tab.id ? 'inline-flex justify-center items-center h-10 px-3 rounded-md text-sm font-bold transition-colors duration-150 text-white bg-white/20' : 'inline-flex justify-center items-center h-10 px-3 rounded-md text-sm font-bold text-white/70 hover:text-white hover:bg-white/10'}
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}
@@ -1511,14 +1511,14 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           ))}
         </nav>
 
-        <div className="mt-auto pt-4 border-t border-white/10">
-          <button type="button" className="inline-flex w-full justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer font-bold text-white bg-red-600 hover:bg-red-700 transition-all duration-150" onClick={signOut}>
+        <div className="mt-auto pt-4 border-t border-white/20">
+          <button type="button" className="inline-flex w-full justify-center items-center h-10 px-4 rounded-md text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-colors duration-150" onClick={signOut}>
             Switch account
           </button>
         </div>
       </aside>
 
-      <main className="min-w-0 grid gap-4.5 p-4 sm:gap-5 sm:p-6 xl:p-7">
+      <main className="min-w-0 grid gap-6 p-5 sm:gap-6 sm:p-7 lg:p-8">
         <div className="grid min-w-0 gap-4.5 sm:gap-5">
           <section className="flex flex-col gap-4 rounded-28 border border-[#E9D5FF] bg-white p-5 shadow-sm sm:p-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
             <div>

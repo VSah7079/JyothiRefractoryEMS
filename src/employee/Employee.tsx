@@ -82,10 +82,8 @@ const EMPLOYEE_TABS: Array<{ id: TabId; label: string }> = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'profile', label: 'Profile' },
   { id: 'attendance', label: 'Attendance' },
-  { id: 'work', label: 'Work Details' },
   { id: 'advances', label: 'Advances' },
   { id: 'salary', label: 'Salary' },
-  { id: 'company', label: 'Company' },
 ]
 
 const EMPLOYEE_SESSION_KEY = 'jyothi-active-user-employee'
@@ -697,7 +695,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     }
 
     return (
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-card">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-card">
         <Panel title="Attendance trend" subtitle="Employee wise attendance footprint for the selected period.">
           <BarChart data={attendanceSeries} />
         </Panel>
@@ -708,18 +706,18 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           <BarChart data={workSeries} />
         </Panel>
         <Panel title="Quick summary" subtitle="Operational numbers filtered to the active login.">
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-summary">
-            <article>
-              <span>Current attendance</span>
-              <strong>{summary.currentAttendance}</strong>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-summary">
+            <article className="text-center">
+              <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest block mb-2">Current attendance</span>
+              <strong className="text-3xl text-[#3B0764]">{summary.currentAttendance}</strong>
             </article>
-            <article>
-              <span>Net payable</span>
-              <strong>{formatCurrency(summary.currentNetPayable)}</strong>
+            <article className="text-center">
+              <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest block mb-2">Net payable</span>
+              <strong className="text-3xl text-[#3B0764]">{formatCurrency(summary.currentNetPayable)}</strong>
             </article>
-            <article>
-              <span>Current month</span>
-              <strong>{formatMonth(currentMonth)}</strong>
+            <article className="text-center">
+              <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest block mb-2">Current month</span>
+              <strong className="text-3xl text-[#3B0764]">{formatMonth(currentMonth)}</strong>
             </article>
           </div>
         </Panel>
@@ -871,9 +869,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     }
 
     return (
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-6">
         <Panel title="Add attendance" subtitle="The logged-in user can create an entry for self or others.">
-          <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" onSubmit={saveAttendance}>
+          <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveAttendance}>
             <label>
               Employee
               <select
@@ -1007,140 +1005,15 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     )
   }
 
-  function renderWork() {
-    if (!workbook || !currentUser) {
-      return null
-    }
-
-    return (
-      <div className="grid grid-cols-1 gap-4">
-        {isAdmin ? (
-          <Panel title={editingWorkId ? 'Edit work' : 'Add work'} subtitle="Update work amount, received amount, and the remaining balance.">
-            <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" onSubmit={saveWork}>
-              <label>
-                Employee
-                <select value={workDraft.EmployeeID} onChange={(event) => setWorkDraft((current) => ({ ...current, EmployeeID: event.target.value }))} required>
-                  <option value="">Select employee</option>
-                  {workbook.employees.map((employee) => (
-                    <option key={employee.EmployeeID} value={employee.EmployeeID}>
-                      {employee.EmployeeName}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                WorkTitle
-                <input value={workDraft.WorkTitle} onChange={(event) => setWorkDraft((current) => ({ ...current, WorkTitle: event.target.value }))} required />
-              </label>
-              <label>
-                StartDate
-                <input type="date" value={workDraft.StartDate} onChange={(event) => setWorkDraft((current) => ({ ...current, StartDate: event.target.value }))} required />
-              </label>
-              <label>
-                EndDate
-                <input type="date" value={workDraft.EndDate} onChange={(event) => setWorkDraft((current) => ({ ...current, EndDate: event.target.value }))} required />
-              </label>
-              <label>
-                WorkAmount
-                <input type="number" min={0} value={workDraft.WorkAmount} onChange={(event) => setWorkDraft((current) => ({ ...current, WorkAmount: Number(event.target.value) }))} required />
-              </label>
-              <label>
-                ReceivedAmount
-                <input type="number" min={0} value={workDraft.ReceivedAmount} onChange={(event) => setWorkDraft((current) => ({ ...current, ReceivedAmount: Number(event.target.value) }))} required />
-              </label>
-              <label>
-                Status
-                <select value={workDraft.Status} onChange={(event) => setWorkDraft((current) => ({ ...current, Status: event.target.value as WorkStatus }))}>
-                  <option value="Ongoing">Ongoing</option>
-                  <option value="Completed">Completed</option>
-                </select>
-              </label>
-              <div className="flex flex-wrap gap-2.5 mt-1">
-                <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md text-sm cursor-pointer font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150">{editingWorkId ? 'Save work' : 'Add work'}</button>
-                <button type="button" className="btn-ghost-gold inline-flex items-center justify-center rounded-14 py-1.5 px-3 text-sm font-inherit" onClick={() => resetWorkDraft()}>
-                  Clear
-                </button>
-              </div>
-            </form>
-          </Panel>
-        ) : (
-          <Panel title="Work summary" subtitle="Your assigned work items and their current progress.">
-            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-summary">
-              <article className="rounded-24 p-5 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg">
-                <span>Assigned works</span>
-                <strong>{visibleWorks.length}</strong>
-              </article>
-              <article>
-                <span>Ongoing works</span>
-                <strong>{visibleWorks.filter((work) => work.Status === 'Ongoing').length}</strong>
-              </article>
-            </div>
-          </Panel>
-        )}
-
-        <Panel title="Work details" subtitle="Track ongoing and completed work orders.">
-          <div className="max-w-full min-w-0 overflow-x-auto rounded-18 border border-border-subtle [&_table]:min-w-180">
-            <table>
-              <thead>
-                <tr>
-                  <th>WorkID</th>
-                  <th>Employee</th>
-                  <th>WorkTitle</th>
-                  <th>StartDate</th>
-                  <th>EndDate</th>
-                  <th>WorkAmount</th>
-                  <th>ReceivedAmount</th>
-                  <th>PendingAmount</th>
-                  <th>Status</th>
-                  {isAdmin && <th>Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {visibleWorks.map((work) => {
-                  const employee = workbook.employees.find((item) => item.EmployeeID === work.EmployeeID)
-
-                  return (
-                    <tr key={work.WorkID}>
-                      <td>{work.WorkID}</td>
-                      <td>{employee?.EmployeeName ?? work.EmployeeID}</td>
-                      <td>{work.WorkTitle}</td>
-                      <td>{formatDate(work.StartDate)}</td>
-                      <td>{formatDate(work.EndDate)}</td>
-                      <td>{formatCurrency(work.WorkAmount)}</td>
-                      <td>{formatCurrency(work.ReceivedAmount)}</td>
-                      <td>{formatCurrency(work.PendingAmount)}</td>
-                      <td>
-                        <Badge value={work.Status} />
-                      </td>
-                      {isAdmin && (
-                        <td>
-                          <div className="flex flex-wrap gap-2.5">
-                            <button type="button" onClick={() => resetWorkDraft(work)}>
-                              Edit
-                            </button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </Panel>
-      </div>
-    )
-  }
-
   function renderAdvances() {
     if (!workbook || !currentUser) {
       return null
     }
 
     return (
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-6">
         <Panel title="Request advance" subtitle="Create a new request for the current employee or another selected worker.">
-          <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" onSubmit={saveAdvance}>
+          <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveAdvance}>
             <label>
               Employee
               <select value={advanceDraft.EmployeeID} onChange={(event) => setAdvanceDraft((current) => ({ ...current, EmployeeID: event.target.value }))}>
@@ -1243,7 +1116,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     const monthRows = visibleSalaries.filter((salary) => salary.Month === selectedMonthFilter)
 
     return (
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-6">
         <Panel title="Current month pulse" subtitle="A snapshot of the chosen month for the active employee set.">
           <div className="flex flex-wrap gap-2.5 mb-3.5">
             <select value={selectedMonthFilter} onChange={(event) => setSelectedMonthFilter(event.target.value)}>
@@ -1324,86 +1197,6 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               </tbody>
             </table>
           </div>
-        </Panel>
-      </div>
-    )
-  }
-
-  function renderCompany() {
-    if (!workbook) {
-      return null
-    }
-
-    return (
-      <div className="grid grid-cols-1 gap-4">
-        <Panel title="Company details" subtitle="Admins can update company details directly in the workbook.">
-          {selectedCompany ? (
-            <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" onSubmit={saveCompany}>
-              <label>
-                CompanyID
-                <input value={selectedCompany.CompanyID} readOnly />
-              </label>
-              <label>
-                CompanyName
-                <input value={selectedCompany.CompanyName} onChange={(event) => updateSelectedCompany('CompanyName', event.target.value)} readOnly={!isAdmin} />
-              </label>
-              <label>
-                Address
-                <textarea rows={3} value={selectedCompany.Address} onChange={(event) => updateSelectedCompany('Address', event.target.value)} readOnly={!isAdmin} />
-              </label>
-              <label>
-                WorkAddress
-                <textarea rows={3} value={selectedCompany.WorkAddress} onChange={(event) => updateSelectedCompany('WorkAddress', event.target.value)} readOnly={!isAdmin} />
-              </label>
-              <label>
-                GSTIN
-                <input value={selectedCompany.GSTIN} onChange={(event) => updateSelectedCompany('GSTIN', event.target.value)} readOnly={!isAdmin} />
-              </label>
-              <label>
-                Contact
-                <input value={selectedCompany.Contact} onChange={(event) => updateSelectedCompany('Contact', event.target.value)} readOnly={!isAdmin} />
-              </label>
-              <label>
-                Email
-                <input type="email" value={selectedCompany.Email} onChange={(event) => updateSelectedCompany('Email', event.target.value)} readOnly={!isAdmin} />
-              </label>
-              {isAdmin && (
-                <div className="flex flex-wrap gap-2.5 mt-1">
-                  <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md text-sm cursor-pointer font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150">Save company</button>
-                </div>
-              )}
-            </form>
-          ) : (
-            <p className="text-text-softer">No company available.</p>
-          )}
-        </Panel>
-
-        <Panel title="Companies" subtitle="Select a company to view or edit the record.">
-          <div className="grid gap-2.5">
-            {workbook.companies.map((company) => (
-              <button
-                key={company.CompanyID}
-                type="button"
-                className={company.CompanyID === selectedCompanyId ? 'grid gap-1 p-4 text-left text-text-light cursor-pointer rounded-18 bg-accent-gold/15 border border-accent-gold/35' : 'grid gap-1 p-4 text-left text-text-light cursor-pointer bg-bg-panel rounded-18'}
-                onClick={() => {
-                  setSelectedCompanyId(company.CompanyID)
-                }}
-              >
-                <strong>{company.CompanyName}</strong>
-                <span>{company.CompanyID}</span>
-              </button>
-            ))}
-          </div>
-          {isAdmin && (
-            <div className="flex flex-wrap gap-2.5 mt-3.5">
-              <a
-                className="inline-flex items-center justify-center rounded-md border-0 bg-indigo py-2 px-4 font-bold text-white no-underline transition-all duration-150 hover:bg-indigoHover"
-                href="/api/download"
-              >
-                Download Excel
-              </a>
-            </div>
-          )}
         </Panel>
       </div>
     )
@@ -1543,15 +1336,15 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           <Badge value={currentUser.Status} />
         </div>
 
-        <nav className="grid gap-2.5">
+        <nav className="grid gap-2">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
               className={
                 activeTab === tab.id
-                  ? 'w-full rounded-md border-0 bg-white py-2 px-4 text-left font-bold text-indigo transition-all duration-150 shadow-sm'
-                  : 'w-full rounded-md border border-white/20 py-2 px-4 text-left font-semibold text-white/80 transition-all duration-150 hover:border-white/40 hover:bg-white/10'
+                  ? 'inline-flex justify-center items-center h-10 px-3 rounded-md text-sm font-bold transition-colors duration-150 text-white bg-white/20'
+                  : 'inline-flex justify-center items-center h-10 px-3 rounded-md text-sm font-bold text-white/70 hover:text-white hover:bg-white/10'
               }
               onClick={() => {
                 setActiveTab(tab.id)
@@ -1563,10 +1356,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           ))}
         </nav>
 
-        <div className="mt-auto border-t border-gold-soft pt-4">
+        <div className="mt-auto border-t border-white/20 pt-4">
           <button
             type="button"
-            className="btn-ghost-gold inline-flex w-full items-center justify-center py-2.5 px-4 font-inherit no-underline"
+            className="inline-flex w-full justify-center items-center h-10 px-4 rounded-md text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-colors duration-150"
             onClick={signOut}
           >
             Switch account
@@ -1631,21 +1424,21 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           {activeTab === 'dashboard' && renderDashboard()}
           {activeTab === 'profile' && !isAdmin && (
             <Panel title="My profile" subtitle="The employee record visible to the logged-in user.">
-              <div className="grid grid-cols-1 gap-3 rounded-24 border border-border-light bg-bg-panel p-4.5 shadow-glass backdrop-blur-lg sm:grid-cols-summary">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-summary">
                 <div>
-                  <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Employee ID</span>
-                  <strong>{currentUser.EmployeeID}</strong>
+                  <span className="inline-flex mb-2 text-[#7C3AED] uppercase tracking-widest text-xs font-semibold">Employee ID</span>
+                  <strong className="text-lg text-[#3B0764]">{currentUser.EmployeeID}</strong>
                 </div>
                 <div>
-                  <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Phone</span>
-                  <strong>{currentUser.Phone}</strong>
+                  <span className="inline-flex mb-2 text-[#7C3AED] uppercase tracking-widest text-xs font-semibold">Phone</span>
+                  <strong className="text-lg text-[#3B0764]">{currentUser.Phone}</strong>
                 </div>
                 <div>
-                  <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Per-day pay</span>
-                  <strong>{formatCurrency(currentUser.PerdayPay)}</strong>
+                  <span className="inline-flex mb-2 text-[#7C3AED] uppercase tracking-widest text-xs font-semibold">Per-day pay</span>
+                  <strong className="text-lg text-[#3B0764]">{formatCurrency(currentUser.PerdayPay)}</strong>
                 </div>
                 <div>
-                  <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Status</span>
+                  <span className="inline-flex mb-2 text-[#7C3AED] uppercase tracking-widest text-xs font-semibold">Status</span>
                   <Badge value={currentUser.Status} />
                 </div>
               </div>
@@ -1653,10 +1446,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           )}
           {activeTab === 'employees' && renderEmployees()}
           {activeTab === 'attendance' && renderAttendance()}
-          {activeTab === 'work' && renderWork()}
           {activeTab === 'advances' && renderAdvances()}
           {activeTab === 'salary' && renderSalary()}
-          {activeTab === 'company' && renderCompany()}
         </div>
 
         {isAdmin && (
