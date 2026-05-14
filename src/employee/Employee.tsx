@@ -13,12 +13,9 @@ import {
   todayValue,
   type Attendance,
   type Advance,
-  type Company,
   type Employee,
   type PaidStatus,
   type UserRole,
-  type WorkDetail,
-  type WorkStatus,
   type WorkbookData,
 } from '../lib/employeeData'
 import { getCachedWorkbookData, loadWorkbookData, saveWorkbookData } from '../lib/workbookApi'
@@ -47,18 +44,6 @@ type AttendanceDraft = {
   Company: string
   Location: string
   WorkedHour: number
-}
-
-type WorkDraft = {
-  WorkID: string
-  EmployeeID: string
-  CompanyID: string
-  WorkTitle: string
-  StartDate: string
-  EndDate: string
-  WorkAmount: number
-  ReceivedAmount: number
-  Status: WorkStatus
 }
 
 type AdvanceDraft = {
@@ -104,18 +89,6 @@ const EMPTY_ATTENDANCE: AttendanceDraft = {
   Company: '',
   Location: '',
   WorkedHour: 8,
-}
-
-const EMPTY_WORK: WorkDraft = {
-  WorkID: '',
-  EmployeeID: '',
-  CompanyID: '',
-  WorkTitle: '',
-  StartDate: todayValue(),
-  EndDate: todayValue(),
-  WorkAmount: 0,
-  ReceivedAmount: 0,
-  Status: 'Ongoing',
 }
 
 const EMPTY_ADVANCE: AdvanceDraft = {
@@ -204,10 +177,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   const [employeeDraft, setEmployeeDraft] = useState<EmployeeDraft>(EMPTY_EMPLOYEE)
   const [editingEmployeeId, setEditingEmployeeId] = useState('')
   const [attendanceDraft, setAttendanceDraft] = useState<AttendanceDraft>(EMPTY_ATTENDANCE)
-  const [workDraft, setWorkDraft] = useState<WorkDraft>(EMPTY_WORK)
-  const [editingWorkId, setEditingWorkId] = useState('')
   const [advanceDraft, setAdvanceDraft] = useState<AdvanceDraft>(EMPTY_ADVANCE)
-  const [selectedCompanyId, setSelectedCompanyId] = useState('')
   const [selectedEmployeeFilter, setSelectedEmployeeFilter] = useState('all')
   const [selectedCompanyFilter, setSelectedCompanyFilter] = useState('all')
   const [selectedMonthFilter, setSelectedMonthFilter] = useState(monthKeyFromNow())
@@ -292,12 +262,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
       return
     }
 
-    if (!selectedCompanyId && workbook.companies[0]) {
-      setSelectedCompanyId(workbook.companies[0].CompanyID)
-      setAttendanceDraft((current) => ({ ...current, Company: workbook.companies[0].CompanyName }))
-      setAdvanceDraft((current) => ({ ...current, EmployeeID: currentUserIdToDefaultEmployee(workbook, login.role) }))
-    }
-  }, [login.role, selectedCompanyId, workbook])
+    setAdvanceDraft((current) => ({ ...current, EmployeeID: currentUserIdToDefaultEmployee(workbook, login.role) }))
+  }, [login.role, workbook])
 
   const currentUser = useMemo(() => {
     if (!workbook || !activeUserId) {
@@ -331,8 +297,6 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     () => (isAdmin || !currentUser ? workbook?.salaries ?? [] : workbook?.salaries.filter((entry) => entry.EmployeeID === currentUser.EmployeeID) ?? []),
     [currentUser, isAdmin, workbook],
   )
-
-  const selectedCompany = workbook?.companies.find((company) => company.CompanyID === selectedCompanyId) ?? workbook?.companies[0] ?? null
 
   const summary = useMemo(() => {
     if (!workbook) {
@@ -552,6 +516,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
   // Work-related functions (kept for potential future use)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // Unused - Work Details and Company tabs removed from employee interface
+  /*
   function resetWorkDraft(record?: WorkDetail) {
     if (!record) {
       setWorkDraft(EMPTY_WORK)
@@ -602,6 +568,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     setWorkDraft(EMPTY_WORK)
     setEditingWorkId('')
   }
+  */
 
   function saveAdvance(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -659,6 +626,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     })
   }
 
+  // Unused - Company tab removed from employee interface
+  /*
   function saveCompany(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -690,6 +659,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
       setWorkbook({ ...workbook, companies: nextCompanies })
     }
   }
+  */
 
   function renderDashboard() {
     if (!summary) {
@@ -918,11 +888,11 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 required
               />
             </label>
-            <div className="flex flex-wrap gap-2.5 mt-1">
-              <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md text-sm cursor-pointer font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150">Save attendance</button>
+            <div className="flex flex-wrap gap-2.5 mt-1 lg:col-span-3">
+              <button type="submit" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]">Save attendance</button>
               <button
                 type="button"
-                className="btn-ghost-gold inline-flex items-center justify-center rounded-14 py-1.5 px-3 text-sm font-inherit"
+                className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-[#4C1D95] bg-gray-100 hover:bg-gray-200"
                 onClick={() =>
                   setAttendanceDraft({
                     ...EMPTY_ATTENDANCE,
@@ -937,9 +907,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           </form>
         </Panel>
 
-        <Panel title="Attendance" subtitle="Add self or team attendance and filter the register.">
-          <div className="flex flex-wrap gap-2.5">
-            <select className="w-full box-border py-3.25 px-3.75 text-text-light rounded-14 outline-none bg-black/60 border border-white/12" value={selectedEmployeeFilter} onChange={(event) => setSelectedEmployeeFilter(event.target.value)}>
+        <Panel title="Attendance log" subtitle="View your attendance history and worked hours.">
+          <div className="flex flex-wrap gap-2.5 mb-4">
+            <select className="w-full sm:w-auto box-border rounded-md border border-[#D8B4FE] bg-white py-2 px-3 text-[#4C1D95] outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20" value={selectedEmployeeFilter} onChange={(event) => setSelectedEmployeeFilter(event.target.value)}>
               <option value="all">All employees</option>
               {workbook.employees.map((employee) => (
                 <option key={employee.EmployeeID} value={employee.EmployeeID}>
@@ -964,16 +934,16 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             </select>
           </div>
 
-          <div className="max-w-full min-w-0 overflow-x-auto rounded-18 border border-border-subtle [&_table]:min-w-180">
+          <div className="border border-[#E9D5FF] rounded-lg overflow-auto shadow-sm">
             <table>
               <thead>
                 <tr>
-                  <th>AttendanceID</th>
-                  <th>Employee</th>
-                  <th>Date</th>
-                  <th>Company</th>
-                  <th>Location</th>
-                  <th>WorkedHour</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">AttendanceID</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Employee</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Date</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Company</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Location</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Worked hour</th>
                   <th>Addedby</th>
                 </tr>
               </thead>
@@ -1040,10 +1010,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               <textarea rows={4} value={advanceDraft.Reason} onChange={(event) => setAdvanceDraft((current) => ({ ...current, Reason: event.target.value }))} required />
             </label>
             <div className="flex flex-wrap gap-2.5 mt-1 sm:col-span-2 lg:col-span-3">
-              <button type="submit" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md text-sm cursor-pointer font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150">Submit request</button>
+              <button type="submit" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]">Submit request</button>
               <button
                 type="button"
-                className="btn-ghost-gold inline-flex items-center justify-center rounded-14 py-1.5 px-3 text-sm font-inherit"
+                className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-[#4C1D95] bg-gray-100 hover:bg-gray-200"
                 onClick={() =>
                   setAdvanceDraft({
                     ...EMPTY_ADVANCE,
@@ -1058,17 +1028,17 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
         </Panel>
 
         <Panel title="Advance requests" subtitle="Employees can request advances; admins can approve or reject them.">
-          <div className="max-w-full min-w-0 overflow-x-auto rounded-18 border border-border-subtle [&_table]:min-w-180">
+          <div className="border border-[#E9D5FF] rounded-lg overflow-auto shadow-sm">
             <table>
               <thead>
                 <tr>
-                  <th>AdvanceID</th>
-                  <th>Date</th>
-                  <th>Employee</th>
-                  <th>AdvanceAmount</th>
-                  <th>Reason</th>
-                  <th>Status</th>
-                  <th>ApprovedBy</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">AdvanceID</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Date</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Employee</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Amount</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Reason</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Status</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Approved by</th>
                   {isAdmin && <th>Actions</th>}
                 </tr>
               </thead>
@@ -1090,10 +1060,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                       {isAdmin && (
                         <td>
                           <div className="flex flex-wrap gap-2.5">
-                            <button type="button" onClick={() => decideAdvance(advance.AdvanceID, 'Approved')}>
+                            <button type="button" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]" onClick={() => decideAdvance(advance.AdvanceID, 'Approved')}>
                               Approve
                             </button>
-                            <button type="button" className="danger" onClick={() => decideAdvance(advance.AdvanceID, 'Rejected')}>
+                            <button type="button" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-red-600 hover:bg-red-700" onClick={() => decideAdvance(advance.AdvanceID, 'Rejected')}>
                               Reject
                             </button>
                           </div>
@@ -1120,8 +1090,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     return (
       <div className="grid grid-cols-1 gap-6">
         <Panel title="Current month pulse" subtitle="A snapshot of the chosen month for the active employee set.">
-          <div className="flex flex-wrap gap-2.5 mb-3.5">
-            <select value={selectedMonthFilter} onChange={(event) => setSelectedMonthFilter(event.target.value)}>
+          <div className="flex flex-wrap gap-2.5 mb-4">
+            <select className="box-border rounded-md border border-[#D8B4FE] bg-white py-2 px-3 text-[#4C1D95] outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20" value={selectedMonthFilter} onChange={(event) => setSelectedMonthFilter(event.target.value)}>
               {monthChoicesBackwards(12).map((month) => (
                 <option key={month} value={month}>
                   {formatMonth(month)}
@@ -1129,39 +1099,39 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-summary">
-            <article className="rounded-24 p-5 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg">
-              <span>Total attendance</span>
-              <strong>{monthRows.reduce((sum, row) => sum + row.TotalAttendance, 0)}</strong>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-summary mt-6">
+            <article className="rounded-lg p-5 bg-white border border-[#E9D5FF] shadow-sm">
+              <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest block mb-2">Total attendance</span>
+              <strong className="text-2xl text-[#3B0764] block">{monthRows.reduce((sum, row) => sum + row.TotalAttendance, 0)}</strong>
             </article>
-            <article>
-              <span>Gross salary</span>
-              <strong>{formatCurrency(monthRows.reduce((sum, row) => sum + row.NetSalary, 0))}</strong>
+            <article className="rounded-lg p-5 bg-white border border-[#E9D5FF] shadow-sm text-center">
+              <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest block mb-2">Gross salary</span>
+              <strong className="text-2xl text-[#3B0764] block">{formatCurrency(monthRows.reduce((sum, row) => sum + row.NetSalary, 0))}</strong>
             </article>
-            <article>
-              <span>Deductions</span>
-              <strong>{formatCurrency(monthRows.reduce((sum, row) => sum + row.AdvanceDeductions, 0))}</strong>
+            <article className="rounded-lg p-5 bg-white border border-[#E9D5FF] shadow-sm text-center">
+              <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest block mb-2">Deductions</span>
+              <strong className="text-2xl text-[#3B0764] block">{formatCurrency(monthRows.reduce((sum, row) => sum + row.AdvanceDeductions, 0))}</strong>
             </article>
-            <article>
-              <span>Net payable</span>
-              <strong>{formatCurrency(monthRows.reduce((sum, row) => sum + row.NetPayble, 0))}</strong>
+            <article className="rounded-lg p-5 bg-white border border-[#E9D5FF] shadow-sm text-center">
+              <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest block mb-2">Net payable</span>
+              <strong className="text-2xl text-[#3B0764] block">{formatCurrency(monthRows.reduce((sum, row) => sum + row.NetPayble, 0))}</strong>
             </article>
           </div>
         </Panel>
 
         <Panel title="Salary" subtitle="Current and historical salary rows are derived from attendance and approved advances.">
-          <div className="max-w-full min-w-0 overflow-x-auto rounded-18 border border-border-subtle [&_table]:min-w-180">
+          <div className="border border-[#E9D5FF] rounded-lg overflow-auto shadow-sm">
             <table>
               <thead>
                 <tr>
-                  <th>SalaryID</th>
-                  <th>Employee</th>
-                  <th>Month</th>
-                  <th>TotalAttendance</th>
-                  <th>NetSalary</th>
-                  <th>AdvanceDeductions</th>
-                  <th>NetPayable</th>
-                  <th>PaidStatus</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">SalaryID</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Employee</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Month</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Attendance</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Net salary</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Deductions</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Payable</th>
+                  <th className="bg-[#FAF5FF] text-[#3B0764] font-bold">Status</th>
                   {isAdmin && <th>Actions</th>}
                 </tr>
               </thead>
