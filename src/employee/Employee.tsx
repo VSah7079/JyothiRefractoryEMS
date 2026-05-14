@@ -774,10 +774,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                           <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150" onClick={() => resetEmployeeDraft(employee)}>
                             Edit
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-purple hover:bg-purple/90 transition-all duration-150" onClick={() => toggleEmployeeStatus(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-[#EC4899] hover:bg-[#DB2777] transition-all duration-150" onClick={() => toggleEmployeeStatus(employee.EmployeeID)}>
                             {employee.Status === 'Active' ? 'Deactivate' : 'Activate'}
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-purple hover:bg-purple/90 transition-all duration-150" onClick={() => resetPassword(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-[#EC4899] hover:bg-[#DB2777] transition-all duration-150" onClick={() => resetPassword(employee.EmployeeID)}>
                             Reset
                           </button>
                           <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-red-600 hover:bg-red-700 transition-all duration-150" onClick={() => removeEmployee(employee.EmployeeID)}>
@@ -1514,9 +1514,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   )
 
   return (
-    <div className="bg-[#F8FAFC] grid min-h-screen-vh min-w-0 grid-cols-1 text-[#0F172A] lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+    <div className="bg-[#FAF5FF] grid min-h-screen-vh min-w-0 grid-cols-1 text-[#4C1D95] lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
       {sidebarOpen && <div className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />}
-      <aside className={`bg-gradient-to-b from-[#6366F1] to-[#8B5CF6] fixed inset-y-0 left-0 z-40 w-80 max-w-full flex-col gap-4 p-4 transition-transform duration-200 sm:gap-5 sm:p-6 lg:w-auto lg:sticky lg:top-0 lg:h-dvh lg:max-h-screen lg:overflow-y-auto lg:p-7 lg:self-start lg:translate-x-0 ${sidebarOpen ? 'flex translate-x-0' : 'flex -translate-x-full lg:translate-x-0'}`}>
+      <aside className={`bg-gradient-to-b from-[#7C3AED] to-[#A855F7] fixed inset-y-0 left-0 z-40 w-80 max-w-full flex-col gap-4 p-4 transition-transform duration-200 sm:gap-5 sm:p-6 lg:w-auto lg:sticky lg:top-0 lg:h-dvh lg:max-h-screen lg:overflow-y-auto lg:p-7 lg:self-start lg:translate-x-0 ${sidebarOpen ? 'flex translate-x-0' : 'flex -translate-x-full lg:translate-x-0'}`}>
         <div className="flex items-center gap-3 rounded-lg border border-white/20 bg-white/10 p-4 shadow-sm sm:gap-3.5 sm:p-4.5 backdrop-blur-sm">
           <span className="grid size-12 shrink-0 place-items-center rounded-md bg-white/20 font-black tracking-widest text-white sm:size-14">
             JR
@@ -1590,11 +1590,11 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             </button>
           </div>
 
-          <section className="bg-main-hero-shell flex flex-col gap-4 rounded-28 border border-gold-soft p-5 shadow-glass backdrop-blur-lg sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-6">
+          <section className="flex flex-col gap-4 rounded-28 border border-[#E9D5FF] bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-6">
             <div className="min-w-0">
-              <span className="text-accent-gold mb-2 inline-flex text-xs uppercase tracking-widest">Project workbook</span>
-              <h2 className="text-xl font-semibold sm:text-2xl">{isAdmin ? 'Admin control room' : 'Employee workspace'}</h2>
-              <p className="text-text-softer mt-1 max-w-2xl text-sm leading-relaxed">
+              <span className="text-[#7C3AED] mb-2 inline-flex text-xs uppercase tracking-widest">Project workbook</span>
+              <h2 className="text-xl font-semibold sm:text-2xl text-[#3B0764]">{isAdmin ? 'Admin control room' : 'Employee workspace'}</h2>
+              <p className="text-[#4C1D95] mt-1 max-w-2xl text-sm leading-relaxed">
                 Data is stored in the project workbook and mirrored in browser storage for offline fallback.
               </p>
             </div>

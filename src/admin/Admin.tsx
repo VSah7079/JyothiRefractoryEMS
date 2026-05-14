@@ -180,7 +180,7 @@ function BarChart({ data }: { data: Array<{ label: string; value: number }> }) {
             <strong>{formatNumber(entry.value)}</strong>
           </div>
           <div className="w-full h-3 overflow-hidden rounded-full bg-gray-100">
-            <div className="h-full rounded-full bg-gradient-to-r from-indigo to-purple" style={{ width: `${(entry.value / max) * 100}%` }} />
+            <div className="h-full rounded-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7]" style={{ width: `${(entry.value / max) * 100}%` }} />
           </div>
         </div>
       ))}
@@ -823,10 +823,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                           <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150" onClick={() => resetEmployeeDraft(employee)}>
                             Edit
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-purple hover:bg-purple/90 transition-all duration-150" onClick={() => toggleEmployeeStatus(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-[#EC4899] hover:bg-[#DB2777] transition-all duration-150" onClick={() => toggleEmployeeStatus(employee.EmployeeID)}>
                             {employee.Status === 'Active' ? 'Deactivate' : 'Activate'}
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-purple hover:bg-purple/90 transition-all duration-150" onClick={() => resetPassword(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-[#EC4899] hover:bg-[#DB2777] transition-all duration-150" onClick={() => resetPassword(employee.EmployeeID)}>
                             Reset
                           </button>
                           <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-red-600 hover:bg-red-700 transition-all duration-150" onClick={() => removeEmployee(employee.EmployeeID)}>
@@ -852,7 +852,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     return (
       <div className="grid grid-cols-1 gap-4">
         <Panel title="Add attendance" subtitle="The logged-in user can create an entry for self or others.">
-          <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" onSubmit={saveAttendance}>
+          <form className="grid grid-cols-1 sm:grid-cols-3 gap-3" onSubmit={saveAttendance}>
             <label>
               Employee
               <select
@@ -897,7 +897,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 required
               />
             </label>
-            <div className="flex flex-wrap gap-2.5 mt-1">
+            <div className="flex flex-wrap gap-2.5 mt-1 sm:col-span-3">
               <button type="submit" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150">Save attendance</button>
               <button
                 type="button"
@@ -917,8 +917,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
         </Panel>
 
         <Panel title="Attendance" subtitle="Add self or team attendance and filter the register.">
-          <div className="flex flex-wrap gap-2.5">
-            <select className="w-full box-border py-2 px-3 text-main-text rounded-md outline-none bg-white border border-input-border focus:border-indigo focus:ring-1 focus:ring-indigo/20" value={selectedEmployeeFilter} onChange={(event) => setSelectedEmployeeFilter(event.target.value)}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-center">
+            <select className="w-full box-border py-2 px-3 text-[#4C1D95] rounded-md outline-none bg-white border border-[#D8B4FE] focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20" value={selectedEmployeeFilter} onChange={(event) => setSelectedEmployeeFilter(event.target.value)}>
               <option value="all">All employees</option>
               {workbook.employees.map((employee) => (
                 <option key={employee.EmployeeID} value={employee.EmployeeID}>
@@ -926,7 +926,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 </option>
               ))}
             </select>
-            <select value={selectedCompanyFilter} onChange={(event) => setSelectedCompanyFilter(event.target.value)}>
+            <select className="w-full box-border py-2 px-3 text-[#4C1D95] rounded-md outline-none bg-white border border-[#D8B4FE] focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20" value={selectedCompanyFilter} onChange={(event) => setSelectedCompanyFilter(event.target.value)}>
               <option value="all">All companies</option>
               {workbook.companies.map((company) => (
                 <option key={company.CompanyID} value={company.CompanyName}>
@@ -934,7 +934,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 </option>
               ))}
             </select>
-            <select value={selectedMonthFilter} onChange={(event) => setSelectedMonthFilter(event.target.value)}>
+            <select className="w-full box-border py-2 px-3 text-[#4C1D95] rounded-md outline-none bg-white border border-[#D8B4FE] focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20" value={selectedMonthFilter} onChange={(event) => setSelectedMonthFilter(event.target.value)}>
               {monthChoicesBackwards(12).map((month) => (
                 <option key={month} value={month}>
                   {formatMonth(month)}
@@ -1484,14 +1484,14 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   )
 
   return (
-    <div className="bg-[#F8FAFC] grid min-h-screen-vh grid-cols-1 text-[#0F172A] lg:grid-cols-[320px_minmax(0,1fr)]">
-      <aside className="bg-gradient-to-b from-[#6366F1] to-[#8B5CF6] flex flex-col gap-5 p-4 sm:p-6 lg:sticky lg:top-0 lg:h-dvh lg:overflow-y-auto lg:p-7 lg:self-start">
-        <div className="flex items-center gap-3.5 p-4 rounded-lg bg-white border border-[#E2E8F0] shadow-sm">
-          <span className="grid place-items-center w-12 h-12 rounded-md font-bold tracking-wider text-white bg-white/20" >JR</span>
-          <div className="text-white text-sm">
-            <span className="inline-flex mb-0.5 text-xs font-semibold opacity-80">Logged in as</span>
-            <strong className="block">{currentUser.EmployeeName}</strong>
-            <p className="text-xs opacity-75">{currentUser.EmployeeID}</p>
+    <div className="bg-[#FAF5FF] grid min-h-screen-vh grid-cols-1 text-[#4C1D95] lg:grid-cols-[320px_minmax(0,1fr)]">
+      <aside className="bg-gradient-to-b from-[#7C3AED] to-[#A855F7] flex flex-col gap-5 p-4 sm:p-6 lg:sticky lg:top-0 lg:h-dvh lg:overflow-y-auto lg:p-7 lg:self-start">
+        <div className="flex items-center gap-3.5 p-4 rounded-lg bg-white border border-[#E9D5FF] shadow-sm">
+          <span className="grid place-items-center w-12 h-12 rounded-md font-bold tracking-wider text-[#7C3AED] bg-[#7C3AED]/10">JR</span>
+          <div className="ml-3 min-w-0">
+            <div className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest">Logged in as</div>
+            <strong className="block text-sm text-[#4C1D95] truncate">{currentUser.EmployeeName}</strong>
+            <p className="text-xs text-[#7E22CE] opacity-85 truncate">{currentUser.EmployeeID}</p>
           </div>
           <div className="ml-auto">
             <Badge value={currentUser.Status} />
@@ -1520,11 +1520,11 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
       <main className="min-w-0 grid gap-4.5 p-4 sm:gap-5 sm:p-6 xl:p-7">
         <div className="grid min-w-0 gap-4.5 sm:gap-5">
-          <section className="flex flex-col gap-4 rounded-28 border border-white/10 bg-[linear-gradient(135deg,rgba(14,22,37,0.92),rgba(17,28,45,0.84))] p-5 shadow-glass backdrop-blur-lg sm:p-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+          <section className="flex flex-col gap-4 rounded-28 border border-[#E9D5FF] bg-white p-5 shadow-sm sm:p-6 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
             <div>
-              <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Project workbook</span>
-              <h2>{isAdmin ? 'Admin control room' : 'Employee workspace'}</h2>
-              <p>
+              <span className="inline-flex mb-2 text-[#7C3AED] uppercase tracking-uppercase text-xs-tiny">Project workbook</span>
+              <h2 className="text-[#3B0764]">{isAdmin ? 'Admin control room' : 'Employee workspace'}</h2>
+              <p className="text-[#4C1D95]">
                 Data is stored in the project workbook and mirrored in browser storage for offline fallback.
               </p>
             </div>
