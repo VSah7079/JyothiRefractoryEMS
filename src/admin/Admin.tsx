@@ -10,7 +10,6 @@ import {
   monthChoicesBackwards,
   monthKeyFromNow,
   recalculateDerivedData,
-  seedWorkbookData,
   todayValue,
   type Attendance,
   type Advance,
@@ -22,7 +21,7 @@ import {
   type WorkStatus,
   type WorkbookData,
 } from '../lib/employeeData'
-import { getCachedWorkbookData, loadWorkbookData, saveWorkbookData } from '../lib/workbookApi'
+import { loadWorkbookData, saveWorkbookData } from '../lib/workbookApi'
 
 type TabId = 'dashboard' | 'profile' | 'employees' | 'attendance' | 'work' | 'advances' | 'salary' | 'company'
 
@@ -219,20 +218,13 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
     async function bootstrap() {
       const remote = await loadWorkbookData()
-      const cached = getCachedWorkbookData()
-      const source = remote ?? cached ?? seedWorkbookData
-      const normalized = recalculateDerivedData(source, source)
 
       if (!isMounted) {
         return
       }
 
-      setWorkbook(normalized)
+      setWorkbook(remote ? recalculateDerivedData(remote, remote) : null)
       setLoading(false)
-
-      if (!remote) {
-        localStorage.setItem('jyothi-workbook-data', JSON.stringify(normalized))
-      }
     }
 
     void bootstrap()
@@ -1470,15 +1462,15 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               <div className="border-t border-[#7C3AED]/30 pt-6">
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <div className="text-2xl sm:text-3xl font-bold text-[#EC4899]">{formatNumber(seedWorkbookData.employees.length)}</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-[#EC4899]">{formatNumber(workbook?.employees.length ?? 0)}</div>
                     <p className="text-xs text-[#A855F7] mt-1">Employees</p>
                   </div>
                   <div>
-                    <div className="text-2xl sm:text-3xl font-bold text-[#EC4899]">{formatNumber(seedWorkbookData.workDetails.length)}</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-[#EC4899]">{formatNumber(workbook?.workDetails.length ?? 0)}</div>
                     <p className="text-xs text-[#A855F7] mt-1">Work Orders</p>
                   </div>
                   <div>
-                    <div className="text-2xl sm:text-3xl font-bold text-[#EC4899]">{formatNumber(seedWorkbookData.advances.length)}</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-[#EC4899]">{formatNumber(workbook?.advances.length ?? 0)}</div>
                     <p className="text-xs text-[#A855F7] mt-1">Advances</p>
                   </div>
                 </div>

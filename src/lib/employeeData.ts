@@ -525,14 +525,3 @@ export function recalculateDerivedData(data: WorkbookData, previous?: WorkbookDa
   }
 }
 
-export const seedWorkbookData = (() => {
-  const seed = recalculateDerivedData(createSeedData())
-
-  seed.salaries = seed.salaries.map((salary) =>
-    salary.EmployeeID === 'EMP001' && salary.Month === monthKeyFromNow()
-      ? { ...salary, PaidStatus: 'Paid' }
-      : salary,
-  )
-
-  return seed
-})()

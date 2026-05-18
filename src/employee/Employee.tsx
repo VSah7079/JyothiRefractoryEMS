@@ -9,7 +9,6 @@ import {
   monthChoicesBackwards,
   monthKeyFromNow,
   recalculateDerivedData,
-  seedWorkbookData,
   todayValue,
   type Attendance,
   type Advance,
@@ -18,7 +17,7 @@ import {
   type UserRole,
   type WorkbookData,
 } from '../lib/employeeData'
-import { getCachedWorkbookData, loadWorkbookData, saveWorkbookData } from '../lib/workbookApi'
+import { loadWorkbookData, saveWorkbookData } from '../lib/workbookApi'
 
 type TabId = 'dashboard' | 'profile' | 'employees' | 'attendance' | 'work' | 'advances' | 'salary' | 'company'
 
@@ -188,20 +187,13 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
     async function bootstrap() {
       const remote = await loadWorkbookData()
-      const cached = getCachedWorkbookData()
-      const source = remote ?? cached ?? seedWorkbookData
-      const normalized = recalculateDerivedData(source, source)
 
       if (!isMounted) {
         return
       }
 
-      setWorkbook(normalized)
+      setWorkbook(remote ? recalculateDerivedData(remote, remote) : null)
       setLoading(false)
-
-      if (!remote) {
-        localStorage.setItem('jyothi-workbook-data', JSON.stringify(normalized))
-      }
     }
 
     void bootstrap()
@@ -1220,7 +1212,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="group rounded-xl p-4 sm:p-5 bg-white border-2 border-[#E9D5FF] hover:border-[#D8B4FE] hover:shadow-lg transition-all duration-200 cursor-default">
                   <div className="text-3xl font-bold bg-gradient-to-r from-[#7C3AED] to-[#A855F7] bg-clip-text text-transparent">
-                    {formatNumber(seedWorkbookData.employees.length)}
+                    {formatNumber(workbook?.employees.length ?? 0)}
                   </div>
                   <p className="text-xs sm:text-sm font-semibold text-[#7C3AED] uppercase tracking-widest mt-2">Employees</p>
                   <p className="text-xs text-[#4C1D95] mt-1">in system</p>
@@ -1228,7 +1220,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
                 <div className="group rounded-xl p-4 sm:p-5 bg-white border-2 border-[#E9D5FF] hover:border-[#D8B4FE] hover:shadow-lg transition-all duration-200 cursor-default">
                   <div className="text-3xl font-bold bg-gradient-to-r from-[#7C3AED] to-[#A855F7] bg-clip-text text-transparent">
-                    {formatNumber(seedWorkbookData.workDetails.length)}
+                    {formatNumber(workbook?.workDetails.length ?? 0)}
                   </div>
                   <p className="text-xs sm:text-sm font-semibold text-[#7C3AED] uppercase tracking-widest mt-2">Work Orders</p>
                   <p className="text-xs text-[#4C1D95] mt-1">active</p>
@@ -1236,7 +1228,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
                 <div className="group rounded-xl p-4 sm:p-5 bg-white border-2 border-[#E9D5FF] hover:border-[#D8B4FE] hover:shadow-lg transition-all duration-200 cursor-default">
                   <div className="text-3xl font-bold bg-gradient-to-r from-[#7C3AED] to-[#A855F7] bg-clip-text text-transparent">
-                    {formatNumber(seedWorkbookData.advances.length)}
+                    {formatNumber(workbook?.advances.length ?? 0)}
                   </div>
                   <p className="text-xs sm:text-sm font-semibold text-[#7C3AED] uppercase tracking-widest mt-2">Advances</p>
                   <p className="text-xs text-[#4C1D95] mt-1">tracked</p>

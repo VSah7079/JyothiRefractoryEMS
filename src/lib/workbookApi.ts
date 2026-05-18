@@ -1,7 +1,5 @@
 import type { WorkbookData } from './employeeData'
 
-const STORAGE_KEY = 'jyothi-workbook-data'
-
 export async function loadWorkbookData(): Promise<WorkbookData | null> {
   try {
     const response = await fetch('/api/state')
@@ -17,8 +15,6 @@ export async function loadWorkbookData(): Promise<WorkbookData | null> {
 }
 
 export async function saveWorkbookData(data: WorkbookData) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-
   try {
     await fetch('/api/state', {
       method: 'PUT',
@@ -29,19 +25,5 @@ export async function saveWorkbookData(data: WorkbookData) {
     })
   } catch {
     return
-  }
-}
-
-export function getCachedWorkbookData() {
-  const saved = localStorage.getItem(STORAGE_KEY)
-
-  if (!saved) {
-    return null
-  }
-
-  try {
-    return JSON.parse(saved) as WorkbookData
-  } catch {
-    return null
   }
 }
