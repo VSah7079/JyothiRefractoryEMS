@@ -1,4 +1,5 @@
 ﻿import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   formatCurrency,
   formatDate,
@@ -163,7 +164,7 @@ function MetricCard({ label, value, hint }: { label: string; value: ReactNode; h
     <article className="rounded-md p-4 bg-white border border-[#E9D5FF] shadow-sm flex-1 min-w-fit">
       <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest">{label}</span>
       <strong className="text-2xl block text-[#3B0764] mt-2">{value}</strong>
-      <p className="text-xs text-[#4C1D95] mt-2">{hint}</p>
+      <p className="text-xs text-text-light mt-2">{hint}</p>
     </article>
   )
 }
@@ -175,12 +176,12 @@ function BarChart({ data }: { data: Array<{ label: string; value: number }> }) {
     <div className="grid gap-3.5">
       {data.map((entry) => (
         <div key={entry.label} className="grid gap-2">
-          <div className="flex justify-between items-center gap-3 text-main-text">
+          <div className="flex justify-between items-center gap-3 text-text-light">
             <span>{entry.label}</span>
             <strong>{formatNumber(entry.value)}</strong>
           </div>
           <div className="w-full h-3 overflow-hidden rounded-full bg-gray-100">
-            <div className="h-full rounded-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7]" style={{ width: `${(entry.value / max) * 100}%` }} />
+            <div className="h-full rounded-full bg-linear-to-r from-indigo to-primary-purple" style={{ width: `${(entry.value / max) * 100}%` }} />
           </div>
         </div>
       ))}
@@ -189,6 +190,7 @@ function BarChart({ data }: { data: Array<{ label: string; value: number }> }) {
 }
 
 export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
+  const navigate = useNavigate()
   const [workbook, setWorkbook] = useState<WorkbookData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -388,6 +390,11 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     setActiveUserId(selectedAccount.EmployeeID)
     sessionStorage.setItem('jyothi-active-user', selectedAccount.EmployeeID)
     setActiveTab('dashboard')
+    
+    // Redirect based on role
+    if (selectedAccount.Role === 'Employee') {
+      navigate('/employee')
+    }
   }
 
   function signOut() {
@@ -1404,62 +1411,174 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     const accountList = workbook?.employees.filter((employee) => employee.Role === login.role) ?? []
 
     return (
-      <div className="grid gap-4.5 min-h-screen-vh p-6 bg-gradient-hero grid-cols-1 lg:grid-cols-2 sm:p-4">
-        <section className="grid gap-4.5 content-start p-7 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg rounded-24">
-          <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Jyothi Refractory</span>
-          <h1>Excel-backed employee management for attendance, salary, advances, and work tracking.</h1>
-          <p>
-            The app reads and writes a workbook in the project folder, then falls back to browser storage if the dev API is unavailable.
-          </p>
-          <div className="grid gap-3 grid-cols-hero">
-            <article className="grid gap-2 p-4 bg-bg-panel rounded-18">
-              <strong>{formatNumber(seedWorkbookData.employees.length)}</strong>
-              <span>Seed employees</span>
-            </article>
-            <article>
-              <strong>{formatNumber(seedWorkbookData.workDetails.length)}</strong>
-              <span>Work orders</span>
-            </article>
-            <article>
-              <strong>{formatNumber(seedWorkbookData.advances.length)}</strong>
-              <span>Advance requests</span>
-            </article>
-          </div>
-        </section>
+      <div className="min-h-screen-vh bg-linear-to-br from-[#2D1B4E] via-[#3B0764] to-text-light flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-5xl">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10">
+            {/* Left Section - Admin Features */}
+            <div className="flex flex-col justify-center gap-6 sm:gap-8 order-2 lg:order-1 text-white">
+              {/* Logo Area */}
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-accent-pink rounded-2xl blur-lg opacity-50"></div>
+                  <div className="relative bg-linear-to-br from-indigo to-accent-pink rounded-2xl p-4 sm:p-5 shadow-2xl">
+                    <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 1C6.48 1 2 5.48 2 11s4.48 10 10 10 10-4.48 10-10S17.52 1 12 1zm-2 15l-5-5 1.41-1.41L10 13.17l7.59-7.59L19 7l-9 9z"/>
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">Admin Control</h1>
+                  <p className="text-sm sm:text-base text-primary-purple font-medium">Management Portal</p>
+                </div>
+              </div>
 
-        <section className="grid gap-4.5 content-start p-7 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg rounded-24">
-          <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Access portal</span>
-          <h2>Sign in to continue</h2>
-          <form className="grid gap-3" onSubmit={loginSubmit}>
-            <label>
-              Role
-              <select
-                value={login.role}
-                onChange={(event) => setRoleAndAccount(event.target.value as UserRole)}
-              >
-                <option value="Employee">Employee</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </label>
-            <label>
-              Account
-              <select value={login.employeeId} onChange={(event) => setLogin((current) => ({ ...current, employeeId: event.target.value }))}>
-                <option value="">Choose account</option>
-                {accountList.map((employee) => (
-                  <option key={employee.EmployeeID} value={employee.EmployeeID}>
-                    {employee.EmployeeName} ({employee.EmployeeID})
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Password
-              <input type="password" value={login.password} onChange={(event) => setLogin((current) => ({ ...current, password: event.target.value }))} placeholder="Enter password" />
-            </label>
-            {loginError && <p className="text-red-300">{loginError}</p>}
-            <button type="submit">Enter dashboard</button>
-          </form>
-        </section>
+              {/* Description */}
+              <div className="space-y-4">
+                <p className="text-base sm:text-lg text-[#E9D5FF] leading-relaxed font-medium">
+                  Full control over employee management, attendance, payroll, and organizational data.
+                </p>
+              </div>
+
+              {/* Admin Capabilities Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="group rounded-xl p-4 sm:p-5 bg-white/10 border-2 border-[#7C3AED]/50 hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/20 transition-all duration-200 cursor-default backdrop-blur-sm">
+                  <div className="text-2xl font-bold text-accent-pink mb-2">👥</div>
+                  <p className="text-sm font-semibold text-white uppercase tracking-widest">Manage Employees</p>
+                  <p className="text-xs text-primary-purple mt-1">Add, edit, and control access</p>
+                </div>
+
+                <div className="group rounded-xl p-4 sm:p-5 bg-white/10 border-2 border-[#7C3AED]/50 hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/20 transition-all duration-200 cursor-default backdrop-blur-sm">
+                  <div className="text-2xl font-bold text-accent-pink mb-2">💰</div>
+                  <p className="text-sm font-semibold text-white uppercase tracking-widest">Payroll Control</p>
+                  <p className="text-xs text-primary-purple mt-1">Process salaries and advances</p>
+                </div>
+
+                <div className="group rounded-xl p-4 sm:p-5 bg-white/10 border-2 border-[#7C3AED]/50 hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/20 transition-all duration-200 cursor-default backdrop-blur-sm">
+                  <div className="text-2xl font-bold text-accent-pink mb-2">📊</div>
+                  <p className="text-sm font-semibold text-white uppercase tracking-widest">Analytics</p>
+                  <p className="text-xs text-primary-purple mt-1">View reports and metrics</p>
+                </div>
+
+                <div className="group rounded-xl p-4 sm:p-5 bg-white/10 border-2 border-[#7C3AED]/50 hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/20 transition-all duration-200 cursor-default backdrop-blur-sm">
+                  <div className="text-2xl font-bold text-accent-pink mb-2">🔐</div>
+                  <p className="text-sm font-semibold text-white uppercase tracking-widest">Secure Access</p>
+                  <p className="text-xs text-primary-purple mt-1">Role-based permissions</p>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="border-t border-[#7C3AED]/30 pt-6">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <div className="text-2xl sm:text-3xl font-bold text-[#EC4899]">{formatNumber(seedWorkbookData.employees.length)}</div>
+                    <p className="text-xs text-[#A855F7] mt-1">Employees</p>
+                  </div>
+                  <div>
+                    <div className="text-2xl sm:text-3xl font-bold text-[#EC4899]">{formatNumber(seedWorkbookData.workDetails.length)}</div>
+                    <p className="text-xs text-[#A855F7] mt-1">Work Orders</p>
+                  </div>
+                  <div>
+                    <div className="text-2xl sm:text-3xl font-bold text-[#EC4899]">{formatNumber(seedWorkbookData.advances.length)}</div>
+                    <p className="text-xs text-[#A855F7] mt-1">Advances</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Section - Login Form */}
+            <div className="order-1 lg:order-2">
+              <div className="relative h-full">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#EC4899]/20 to-[#7C3AED]/20 rounded-3xl blur-xl"></div>
+                <div className="relative bg-gradient-to-br from-white to-[#FAF5FF] rounded-3xl border-2 border-[#E9D5FF] shadow-2xl p-6 sm:p-8 lg:p-10 h-full flex flex-col justify-center">
+                  {/* Header */}
+                  <div className="mb-8 sm:mb-10">
+                    <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full bg-accent-pink/10">
+                      <div className="w-2 h-2 rounded-full bg-accent-pink"></div>
+                      <p className="text-xs sm:text-sm font-bold text-accent-pink uppercase tracking-widest">Admin Access</p>
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-[#3B0764] mb-2">Administration Portal</h2>
+                    <p className="text-sm sm:text-base text-text-light">
+                      Sign in with your administrative credentials
+                    </p>
+                  </div>
+
+                  {/* Form */}
+                  <form className="space-y-5 sm:space-y-6 flex-1" onSubmit={loginSubmit}>
+                    {/* Role Select */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-[#3B0764]">
+                        Account Role
+                      </label>
+                      <select 
+                        value={login.role}
+                        onChange={(event) => setRoleAndAccount(event.target.value as UserRole)}
+                        className="w-full px-4 py-3 rounded-lg border-2 border-[#E9D5FF] text-[#3B0764] font-medium focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all duration-200 bg-white hover:border-[#D8B4FE]"
+                      >
+                        <option value="Admin">Admin</option>
+                        <option value="Employee">Employee</option>
+                      </select>
+                    </div>
+
+                    {/* Account Select */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-[#3B0764]">
+                        Administrator Account
+                      </label>
+                      <select 
+                        value={login.employeeId} 
+                        onChange={(event) => setLogin((current) => ({ ...current, employeeId: event.target.value }))}
+                        className="w-full px-4 py-3 rounded-lg border-2 border-[#E9D5FF] text-[#3B0764] font-medium focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all duration-200 bg-white hover:border-[#D8B4FE]"
+                      >
+                        <option value="">Select administrator</option>
+                        {accountList.map((employee) => (
+                          <option key={employee.EmployeeID} value={employee.EmployeeID}>
+                            {employee.EmployeeName} ({employee.EmployeeID})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Password Input */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-[#3B0764]">
+                        Security Password
+                      </label>
+                      <input 
+                        type="password" 
+                        value={login.password} 
+                        onChange={(event) => setLogin((current) => ({ ...current, password: event.target.value }))}
+                        placeholder="Enter your password"
+                        className="w-full px-4 py-3 rounded-lg border-2 border-[#E9D5FF] text-[#3B0764] font-medium placeholder:text-[#A095A8] focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all duration-200 bg-white hover:border-[#D8B4FE]"
+                      />
+                    </div>
+
+                    {/* Error Message */}
+                    {loginError && (
+                      <div className="p-3 sm:p-4 rounded-lg bg-red-50 border-2 border-red-200">
+                        <p className="text-sm text-red-700 font-medium">{loginError}</p>
+                      </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <button 
+                      type="submit"
+                      className="w-full h-12 sm:h-13 px-4 py-3 rounded-lg bg-gradient-to-r from-[#EC4899] to-[#7C3AED] text-white font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:from-[#DB2777] hover:to-[#6D28D9] transition-all duration-200 transform hover:scale-105 active:scale-95"
+                    >
+                      Access Control Room
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-8 sm:mt-12 text-center">
+            <p className="text-xs sm:text-sm text-[#A855F7] font-medium">
+              Secure Administration • Full Control • Data Protection
+            </p>
+          </div>
+        </div>
       </div>
     )
   }
@@ -1491,7 +1610,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           <div className="ml-3 min-w-0">
             <div className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest">Logged in as</div>
             <strong className="block text-sm text-[#4C1D95] truncate">{currentUser.EmployeeName}</strong>
-            <p className="text-xs text-[#7E22CE] opacity-85 truncate">{currentUser.EmployeeID}</p>
+            <p className="text-xs text-text-softer opacity-85 truncate">{currentUser.EmployeeID}</p>
           </div>
           <div className="ml-auto">
             <Badge value={currentUser.Status} />

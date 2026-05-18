@@ -1190,60 +1190,172 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     const accountList = workbook?.employees.filter((employee) => employee.Role === 'Employee') ?? []
 
     return (
-      <div className="mx-auto grid min-h-screen-vh w-full max-w-6xl grid-cols-1 gap-5 bg-gradient-hero p-4 sm:gap-6 sm:p-6 lg:grid-cols-2 lg:items-stretch lg:gap-8 lg:p-8">
-        <section className="grid content-start gap-4 rounded-24 border border-border-light bg-bg-panel p-5 shadow-glass backdrop-blur-lg sm:gap-5 sm:p-7">
-          <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Jyothi Refractory</span>
-          <h1>Employee portal</h1>
-          <p>
-            View your profile, attendance, work, advances, and salary. Data is synced from the project workbook with a browser fallback when
-            the dev API is unavailable.
-          </p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <article className="grid gap-2 p-4 bg-bg-panel rounded-18">
-              <strong>{formatNumber(seedWorkbookData.employees.length)}</strong>
-              <span>Seed employees</span>
-            </article>
-            <article>
-              <strong>{formatNumber(seedWorkbookData.workDetails.length)}</strong>
-              <span>Work orders</span>
-            </article>
-            <article>
-              <strong>{formatNumber(seedWorkbookData.advances.length)}</strong>
-              <span>Advance requests</span>
-            </article>
-          </div>
-        </section>
+      <div className="min-h-screen-vh bg-gradient-to-br from-[#FAF5FF] via-[#F3E8FF] to-[#EDE9FE] flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-5xl">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10">
+            {/* Left Section - Brand & Benefits */}
+            <div className="flex flex-col justify-center gap-6 sm:gap-8 order-2 lg:order-1">
+              {/* Logo Area */}
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#7C3AED] to-[#A855F7] rounded-2xl blur-lg opacity-75"></div>
+                  <div className="relative bg-gradient-to-br from-[#7C3AED] to-[#A855F7] rounded-2xl p-4 sm:p-5 shadow-lg">
+                    <span className="text-white font-black text-2xl sm:text-3xl tracking-wider">JR</span>
+                  </div>
+                </div>
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-[#3B0764] leading-tight">Jyothi Refractory</h1>
+                  <p className="text-sm sm:text-base text-[#7C3AED] font-medium">Employee Management Portal</p>
+                </div>
+              </div>
 
-        <section className="grid content-start gap-4 rounded-24 border border-border-light bg-bg-panel p-5 shadow-glass backdrop-blur-lg sm:gap-5 sm:p-7">
-          <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Staff sign-in</span>
-          <h2>Employee access</h2>
-          <p className="text-text-softer text-sm">
-            Admins should use the{' '}
-            <a className="text-accent-gold underline-offset-2 hover:underline" href="/admin">
-              admin portal
-            </a>
-            .
-          </p>
-          <form className="grid gap-3" onSubmit={loginSubmit}>
-            <label>
-              Employee account
-              <select value={login.employeeId} onChange={(event) => setLogin((current) => ({ ...current, employeeId: event.target.value }))}>
-                <option value="">Choose employee account</option>
-                {accountList.map((employee) => (
-                  <option key={employee.EmployeeID} value={employee.EmployeeID}>
-                    {employee.EmployeeName} ({employee.EmployeeID})
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Password
-              <input type="password" value={login.password} onChange={(event) => setLogin((current) => ({ ...current, password: event.target.value }))} placeholder="Enter password" />
-            </label>
-            {loginError && <p className="text-red-300">{loginError}</p>}
-            <button type="submit">Enter employee dashboard</button>
-          </form>
-        </section>
+              {/* Description */}
+              <div className="space-y-4">
+                <p className="text-base sm:text-lg text-[#4C1D95] leading-relaxed font-medium">
+                  Welcome to your personal workspace. Manage your professional data with ease.
+                </p>
+              </div>
+
+              {/* Benefits Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="group rounded-xl p-4 sm:p-5 bg-white border-2 border-[#E9D5FF] hover:border-[#D8B4FE] hover:shadow-lg transition-all duration-200 cursor-default">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-[#7C3AED] to-[#A855F7] bg-clip-text text-transparent">
+                    {formatNumber(seedWorkbookData.employees.length)}
+                  </div>
+                  <p className="text-xs sm:text-sm font-semibold text-[#7C3AED] uppercase tracking-widest mt-2">Employees</p>
+                  <p className="text-xs text-[#4C1D95] mt-1">in system</p>
+                </div>
+
+                <div className="group rounded-xl p-4 sm:p-5 bg-white border-2 border-[#E9D5FF] hover:border-[#D8B4FE] hover:shadow-lg transition-all duration-200 cursor-default">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-[#7C3AED] to-[#A855F7] bg-clip-text text-transparent">
+                    {formatNumber(seedWorkbookData.workDetails.length)}
+                  </div>
+                  <p className="text-xs sm:text-sm font-semibold text-[#7C3AED] uppercase tracking-widest mt-2">Work Orders</p>
+                  <p className="text-xs text-[#4C1D95] mt-1">active</p>
+                </div>
+
+                <div className="group rounded-xl p-4 sm:p-5 bg-white border-2 border-[#E9D5FF] hover:border-[#D8B4FE] hover:shadow-lg transition-all duration-200 cursor-default">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-[#7C3AED] to-[#A855F7] bg-clip-text text-transparent">
+                    {formatNumber(seedWorkbookData.advances.length)}
+                  </div>
+                  <p className="text-xs sm:text-sm font-semibold text-[#7C3AED] uppercase tracking-widest mt-2">Advances</p>
+                  <p className="text-xs text-[#4C1D95] mt-1">tracked</p>
+                </div>
+              </div>
+
+              {/* Features List */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7] flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span className="text-sm sm:text-base text-[#4C1D95]">Track attendance & work details</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7] flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span className="text-sm sm:text-base text-[#4C1D95]">Request & manage advances</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7] flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span className="text-sm sm:text-base text-[#4C1D95]">View salary & payroll</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Section - Login Form */}
+            <div className="order-1 lg:order-2">
+              <div className="relative h-full">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#7C3AED]/10 to-[#A855F7]/10 rounded-3xl blur-xl"></div>
+                <div className="relative bg-white rounded-3xl border-2 border-[#E9D5FF] shadow-2xl p-6 sm:p-8 lg:p-10 h-full flex flex-col justify-center">
+                  {/* Header */}
+                  <div className="mb-8 sm:mb-10">
+                    <p className="text-xs sm:text-sm font-bold text-[#7C3AED] uppercase tracking-widest mb-3">Welcome Back</p>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-[#3B0764] mb-2">Staff Sign In</h2>
+                    <p className="text-sm sm:text-base text-[#4C1D95]">
+                      Access your workspace securely
+                    </p>
+                  </div>
+
+                  {/* Form */}
+                  <form className="space-y-5 sm:space-y-6 flex-1" onSubmit={loginSubmit}>
+                    {/* Employee Account Select */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-[#3B0764]">
+                        Select Your Account
+                      </label>
+                      <select 
+                        value={login.employeeId} 
+                        onChange={(event) => setLogin((current) => ({ ...current, employeeId: event.target.value }))}
+                        className="w-full px-4 py-3 rounded-lg border-2 border-[#E9D5FF] text-[#3B0764] font-medium focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all duration-200 bg-white hover:border-[#D8B4FE]"
+                      >
+                        <option value="">Choose your employee account</option>
+                        {accountList.map((employee) => (
+                          <option key={employee.EmployeeID} value={employee.EmployeeID}>
+                            {employee.EmployeeName} ({employee.EmployeeID})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Password Input */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-[#3B0764]">
+                        Password
+                      </label>
+                      <input 
+                        type="password" 
+                        value={login.password} 
+                        onChange={(event) => setLogin((current) => ({ ...current, password: event.target.value }))}
+                        placeholder="Enter your password"
+                        className="w-full px-4 py-3 rounded-lg border-2 border-[#E9D5FF] text-[#3B0764] font-medium placeholder:text-[#A095A8] focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all duration-200 bg-white hover:border-[#D8B4FE]"
+                      />
+                    </div>
+
+                    {/* Error Message */}
+                    {loginError && (
+                      <div className="p-3 sm:p-4 rounded-lg bg-red-50 border-2 border-red-200">
+                        <p className="text-sm text-red-700 font-medium">{loginError}</p>
+                      </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <button 
+                      type="submit"
+                      className="w-full h-12 sm:h-13 px-4 py-3 rounded-lg bg-gradient-to-r from-[#7C3AED] to-[#A855F7] text-white font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:from-[#6D28D9] hover:to-[#9333EA] transition-all duration-200 transform hover:scale-105 active:scale-95"
+                    >
+                      Enter Dashboard
+                    </button>
+
+                    {/* Admin Link */}
+                    <p className="text-center text-xs sm:text-sm text-[#4C1D95] mt-6 pt-4 border-t border-[#E9D5FF]">
+                      Admin user?{' '}
+                      <a href="/admin" className="font-bold text-[#7C3AED] hover:text-[#A855F7] transition-colors duration-200">
+                        Sign in here
+                      </a>
+                    </p>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-8 sm:mt-12 text-center">
+            <p className="text-xs sm:text-sm text-[#7C3AED] font-medium">
+              Secure • Fast • Reliable Employee Management
+            </p>
+          </div>
+        </div>
       </div>
     )
   }

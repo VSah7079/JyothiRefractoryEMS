@@ -9,13 +9,13 @@ module.exports = {
         background: '#FAF5FF',
         indigo: '#7C3AED',
         indigoHover: '#6D28D9',
-        purple: '#A855F7',
-        pink: '#EC4899',
+        'primary-purple': '#A855F7',
+        'accent-pink': '#EC4899',
         'card-border': '#E9D5FF',
         'input-border': '#D8B4FE',
         'heading': '#3B0764',
-        'main-text': '#4C1D95',
-        'light-text': '#7E22CE'
+        'text-light': '#4C1D95',
+        'text-softer': '#7E22CE'
       },
       backgroundImage: {
         'premium-banner': 'linear-gradient(90deg, #7C3AED, #A855F7, #EC4899)'
