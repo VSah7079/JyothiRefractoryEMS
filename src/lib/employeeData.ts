@@ -476,6 +476,9 @@ export function recalculateDerivedData(data: WorkbookData, previous?: WorkbookDa
   const previousSalaryStatus = new Map(
     (previous?.salaries ?? []).map((row) => [`${row.EmployeeID}|${row.Month}`, row.PaidStatus]),
   )
+  const currentSalaryStatus = new Map(
+    (data.salaries ?? []).map((row) => [`${row.EmployeeID}|${row.Month}`, row.PaidStatus]),
+  )
   const approvedAdvances = normalized.advances.filter((advance) => advance.Status === 'Approved')
   const keySet = new Set([
     ...groupKeys(normalized.attendance),
@@ -505,7 +508,7 @@ export function recalculateDerivedData(data: WorkbookData, previous?: WorkbookDa
         NetSalary: netSalary,
         AdvanceDeductions: advanceDeductions,
         NetPayble: netPayble,
-        PaidStatus: previousSalaryStatus.get(pair) ?? 'Pending',
+        PaidStatus: currentSalaryStatus.get(pair) ?? previousSalaryStatus.get(pair) ?? 'Pending',
       }
     })
 
