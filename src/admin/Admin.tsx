@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+﻿import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   formatCurrency,
@@ -68,11 +68,6 @@ type AdvanceDraft = {
   Date: string
   AdvanceAmount: number
   Reason: string
-}
-
-type AdvanceDecision = {
-  advanceId: string
-  status: 'Approved' | 'Rejected'
 }
 
 const ADMIN_TABS: Array<{ id: TabId; label: string }> = [
@@ -200,7 +195,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   const [workbook, setWorkbook] = useState<WorkbookData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [pendingAdvanceId, setPendingAdvanceId] = useState('')
   const [activeUserId, setActiveUserId] = useState<string | null>(null)
+  const employeeFormRef = useRef<HTMLDivElement | null>(null)
   const [activeTab, setActiveTab] = useState<TabId>(initialTab ?? 'dashboard')
   const [login, setLogin] = useState<LoginState>({
     role: 'Employee',
@@ -211,10 +208,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   const [employeeDraft, setEmployeeDraft] = useState<EmployeeDraft>(EMPTY_EMPLOYEE)
   const [editingEmployeeId, setEditingEmployeeId] = useState('')
   const [attendanceDraft, setAttendanceDraft] = useState<AttendanceDraft>(EMPTY_ATTENDANCE)
+  const [editingAttendanceId, setEditingAttendanceId] = useState('')
   const [workDraft, setWorkDraft] = useState<WorkDraft>(EMPTY_WORK)
   const [editingWorkId, setEditingWorkId] = useState('')
   const [advanceDraft, setAdvanceDraft] = useState<AdvanceDraft>(EMPTY_ADVANCE)
-  const [pendingAdvanceDecision, setPendingAdvanceDecision] = useState<AdvanceDecision | null>(null)
   const [selectedCompanyId, setSelectedCompanyId] = useState('')
   const [selectedCompanyFilter, setSelectedCompanyFilter] = useState('all')
   const [selectedMonthFilter, setSelectedMonthFilter] = useState(monthKeyFromNow())
@@ -443,6 +440,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
       Status: record.Status,
     })
     setEditingEmployeeId(record.EmployeeID)
+    window.requestAnimationFrame(() => {
+      employeeFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   }
 
   function saveEmployee(event: FormEvent<HTMLFormElement>) {
@@ -520,6 +520,27 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     }
   }
 
+  function resetAttendanceDraft(record?: Attendance) {
+    if (!record) {
+      setAttendanceDraft(EMPTY_ATTENDANCE)
+      setEditingAttendanceId('')
+      return
+    }
+
+    setAttendanceDraft({
+      EmployeeID: record.EmployeeID,
+      Date: record.Date,
+      Company: record.Company,
+      Location: record.Location,
+      WorkedHour: record.WorkedHour,
+    })
+    setEditingAttendanceId(record.AttendanceID)
+    setActiveTab('attendance')
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    })
+  }
+
   function saveAttendance(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -529,7 +550,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
     const targetEmployeeId = attendanceDraft.EmployeeID || currentUser.EmployeeID
     const nextAttendance: Attendance = {
-      AttendanceID: generateId('ATT', workbook.attendance.map((entry) => entry.AttendanceID)),
+      AttendanceID: editingAttendanceId || generateId('ATT', workbook.attendance.map((entry) => entry.AttendanceID)),
       EmployeeID: targetEmployeeId,
       Date: attendanceDraft.Date,
       Company: attendanceDraft.Company,
@@ -538,12 +559,43 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
       Addedby: currentUser.EmployeeName,
     }
 
-    persist({ ...workbook, attendance: [...workbook.attendance, nextAttendance] })
+    const nextAttendanceList = editingAttendanceId
+      ? workbook.attendance.map((entry) => (entry.AttendanceID === editingAttendanceId ? nextAttendance : entry))
+      : [...workbook.attendance, nextAttendance]
+
+    persist({ ...workbook, attendance: nextAttendanceList })
     setAttendanceDraft({
       ...EMPTY_ATTENDANCE,
       EmployeeID: currentUser.Role === 'Admin' ? '' : currentUser.EmployeeID,
       Company: workbook.companies[0]?.CompanyName ?? '',
     })
+    setEditingAttendanceId('')
+  }
+
+  function removeAttendance(attendanceId: string) {
+    if (!workbook) {
+      return
+    }
+
+    const confirmed = window.confirm('Delete this attendance entry?')
+
+    if (!confirmed) {
+      return
+    }
+
+    persist({
+      ...workbook,
+      attendance: workbook.attendance.filter((entry) => entry.AttendanceID !== attendanceId),
+    })
+
+    if (editingAttendanceId === attendanceId) {
+      setAttendanceDraft({
+        ...EMPTY_ATTENDANCE,
+        EmployeeID: currentUser?.Role === 'Admin' ? '' : currentUser?.EmployeeID ?? '',
+        Company: workbook.companies[0]?.CompanyName ?? '',
+      })
+      setEditingAttendanceId('')
+    }
   }
 
   function resetWorkDraft(record?: WorkDetail) {
@@ -627,8 +679,24 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     }
 
     setSaving(true)
+    setPendingAdvanceId(advanceId)
     try {
       const endpoint = status === 'Approved' ? `/api/advance/${advanceId}/approve` : `/api/advance/${advanceId}/reject`
+
+      setWorkbook((current) => {
+        if (!current) {
+          return current
+        }
+
+        return {
+          ...current,
+          advances: current.advances.map((advance) =>
+            advance.AdvanceID === advanceId
+              ? { ...advance, Status: status, ApprovedBy: currentUser.EmployeeName }
+              : advance,
+          ),
+        }
+      })
 
       const response = await fetch(endpoint, {
         method: 'PATCH',
@@ -647,21 +715,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
       console.error(error)
     } finally {
       setSaving(false)
+      setPendingAdvanceId('')
     }
-  }
-
-  function requestAdvanceDecision(advanceId: string, status: 'Approved' | 'Rejected') {
-    setPendingAdvanceDecision({ advanceId, status })
-  }
-
-  async function confirmAdvanceDecision() {
-    if (!pendingAdvanceDecision) {
-      return
-    }
-
-    const decision = pendingAdvanceDecision
-    setPendingAdvanceDecision(null)
-    await decideAdvance(decision.advanceId, decision.status)
   }
 
   function setSalaryStatus(salaryId: string, paidStatus: PaidStatus) {
@@ -784,8 +839,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
     return (
       <div className="grid grid-cols-1 gap-6">
-        <Panel title={editingEmployeeId ? 'Edit employee' : 'Add employee'} subtitle="Every field is synchronized to the database.">
-          <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveEmployee}>
+        <div ref={employeeFormRef}>
+          <Panel title={editingEmployeeId ? 'Edit employee' : 'Add employee'} subtitle="Every field is synchronized to the database.">
+            <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveEmployee}>
             <label>
               Employee ID
               <input
@@ -851,8 +907,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 Clear
               </button>
             </div>
-          </form>
-        </Panel>
+            </form>
+          </Panel>
+        </div>
 
         <Panel title="Employee Overview" subtitle={`${workbook.employees.length} total employee(s)`}>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
@@ -961,7 +1018,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
     return (
       <div className="grid grid-cols-1 gap-6">
-        <Panel title="Add attendance" subtitle="The logged-in user can create an entry for self or others.">
+        <Panel title={editingAttendanceId ? 'Edit attendance' : 'Add attendance'} subtitle="The logged-in user can create an entry for self or others.">
           <form className="grid grid-cols-1 sm:grid-cols-3 gap-4" onSubmit={saveAttendance}>
             <label>
               Employee
@@ -1008,7 +1065,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               />
             </label>
             <div className="flex flex-wrap gap-2.5 mt-1 sm:col-span-3">
-              <button type="submit" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]">Save attendance</button>
+              <button type="submit" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]">{editingAttendanceId ? 'Update attendance' : 'Save attendance'}</button>
               <button
                 type="button"
                 className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-text-light bg-gray-100 hover:bg-gray-200"
@@ -1061,7 +1118,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 const employee = workbook.employees.find((item) => item.EmployeeID === entry.EmployeeID)
                 return (
                   <div key={entry.AttendanceID} className="rounded-lg p-4 bg-linear-to-r from-[#F0F9FF] to-white border-2 border-[#E0E7FF] shadow-sm">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
                       <div>
                         <span className="text-xs font-semibold text-[#6B7280] uppercase">Employee</span>
                         <p className="text-sm font-bold text-[#3B0764] mt-1">{employee?.EmployeeName ?? entry.EmployeeID}</p>
@@ -1085,6 +1142,17 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                       <div>
                         <span className="text-xs font-semibold text-[#6B7280] uppercase">Added By</span>
                         <p className="text-sm font-bold text-[#3B0764] mt-1">{entry.Addedby}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs font-semibold text-[#6B7280] uppercase">Actions</span>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          <button type="button" className="inline-flex items-center justify-center h-8 px-3 rounded-md text-xs font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]" onClick={() => resetAttendanceDraft(entry)}>
+                            Edit
+                          </button>
+                          <button type="button" className="inline-flex items-center justify-center h-8 px-3 rounded-md text-xs font-bold text-white bg-red-600 hover:bg-red-700" onClick={() => removeAttendance(entry.AttendanceID)}>
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1193,7 +1261,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 const progressPercent = work.WorkAmount > 0 ? Math.round((work.ReceivedAmount / work.WorkAmount) * 100) : 0
                 return (
                   <div key={work.WorkID} className={`rounded-lg p-4 border-2 transition-all duration-200 ${isOngoing ? 'bg-linear-to-r from-[#FEF3C7] to-white border-[#FCD34D]' : 'bg-linear-to-r from-[#F0FDF4] to-white border-[#86EFAC]'}`}>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-4">
                       <div>
                         <span className="text-xs font-semibold text-[#6B7280] uppercase">Work Title</span>
                         <p className="text-sm font-bold text-[#3B0764] mt-1">{work.WorkTitle}</p>
@@ -1363,22 +1431,30 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                         <p className="text-sm font-bold text-[#3B0764] mt-1 truncate">{advance.Reason}</p>
                       </div>
                       <div>
+                        <span className="text-xs font-semibold text-[#6B7280] uppercase">Status</span>
+                        <div className="mt-1">
+                          <Badge value={advance.Status} />
+                        </div>
+                      </div>
+                      <div>
                         <span className="text-xs font-semibold text-[#6B7280] uppercase">Action</span>
                         {isAdmin ? (
-                          <div className="flex flex-col gap-2 mt-2">
+                          <div className="flex flex-wrap gap-1.5 mt-2">
                             <button
                               type="button"
-                              className="inline-flex items-center justify-center h-8 px-3 rounded-md text-xs font-bold text-white bg-[#10B981] hover:bg-[#059669]"
-                              onClick={() => requestAdvanceDecision(advance.AdvanceID, 'Approved')}
+                              className="inline-flex items-center justify-center h-6 px-2 rounded-md text-[10px] font-bold tracking-wide text-white bg-[#10B981] hover:bg-[#059669] disabled:opacity-70 disabled:cursor-not-allowed"
+                              onClick={() => void decideAdvance(advance.AdvanceID, 'Approved')}
+                              disabled={saving && pendingAdvanceId === advance.AdvanceID}
                             >
-                              ✓ Approve
+                              {saving && pendingAdvanceId === advance.AdvanceID ? 'Working...' : '✓ Approve'}
                             </button>
                             <button
                               type="button"
-                              className="inline-flex items-center justify-center h-8 px-3 rounded-md text-xs font-bold text-white bg-red-600 hover:bg-red-700"
-                              onClick={() => requestAdvanceDecision(advance.AdvanceID, 'Rejected')}
+                              className="inline-flex items-center justify-center h-6 px-2 rounded-md text-[10px] font-bold tracking-wide text-white bg-red-600 hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed"
+                              onClick={() => void decideAdvance(advance.AdvanceID, 'Rejected')}
+                              disabled={saving && pendingAdvanceId === advance.AdvanceID}
                             >
-                              ✗ Reject
+                              {saving && pendingAdvanceId === advance.AdvanceID ? 'Working...' : '✗ Reject'}
                             </button>
                           </div>
                         ) : (
@@ -1931,40 +2007,6 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
       </main>
 
-      {pendingAdvanceDecision && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4 py-6">
-          <div className="w-full max-w-md rounded-2xl border border-[#E9D5FF] bg-white p-6 shadow-2xl">
-            <div className="mb-4">
-              <p className="text-xs font-semibold uppercase tracking-widest text-[#7C3AED]">Confirm action</p>
-              <h3 className="mt-2 text-xl font-bold text-[#3B0764]">
-                {pendingAdvanceDecision.status === 'Approved' ? 'Approve advance request?' : 'Reject advance request?'}
-              </h3>
-              <p className="mt-2 text-sm text-text-light">
-                This will update the selected employee advance request status.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap justify-end gap-2.5">
-              <button
-                type="button"
-                className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-text-light bg-gray-100 hover:bg-gray-200"
-                onClick={() => setPendingAdvanceDecision(null)}
-                disabled={saving}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className={`inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white ${pendingAdvanceDecision.status === 'Approved' ? 'bg-[#10B981] hover:bg-[#059669]' : 'bg-red-600 hover:bg-red-700'}`}
-                onClick={() => void confirmAdvanceDecision()}
-                disabled={saving}
-              >
-                {saving ? 'Saving...' : pendingAdvanceDecision.status === 'Approved' ? 'Yes, approve' : 'Yes, reject'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
