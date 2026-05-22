@@ -23,6 +23,8 @@ import {
 } from '../lib/employeeData'
 import { loadWorkbookData, saveWorkbookData } from '../lib/workbookApi'
 
+const WORKBOOK_REFRESH_KEY = 'jyothi-workbook-refresh'
+
 type TabId = 'dashboard' | 'profile' | 'employees' | 'attendance' | 'work' | 'advances' | 'salary' | 'company'
 
 type LoginState = {
@@ -66,6 +68,11 @@ type AdvanceDraft = {
   Date: string
   AdvanceAmount: number
   Reason: string
+}
+
+type AdvanceDecision = {
+  advanceId: string
+  status: 'Approved' | 'Rejected'
 }
 
 const ADMIN_TABS: Array<{ id: TabId; label: string }> = [
@@ -207,6 +214,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   const [workDraft, setWorkDraft] = useState<WorkDraft>(EMPTY_WORK)
   const [editingWorkId, setEditingWorkId] = useState('')
   const [advanceDraft, setAdvanceDraft] = useState<AdvanceDraft>(EMPTY_ADVANCE)
+  const [pendingAdvanceDecision, setPendingAdvanceDecision] = useState<AdvanceDecision | null>(null)
   const [selectedCompanyId, setSelectedCompanyId] = useState('')
   const [selectedCompanyFilter, setSelectedCompanyFilter] = useState('all')
   const [selectedMonthFilter, setSelectedMonthFilter] = useState(monthKeyFromNow())
@@ -231,6 +239,26 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
     return () => {
       isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    function handleWorkbookRefresh(event: StorageEvent) {
+      if (event.key !== WORKBOOK_REFRESH_KEY) {
+        return
+      }
+
+      void loadWorkbookData().then((remote) => {
+        if (remote) {
+          setWorkbook(recalculateDerivedData(remote, remote))
+        }
+      })
+    }
+
+    window.addEventListener('storage', handleWorkbookRefresh)
+
+    return () => {
+      window.removeEventListener('storage', handleWorkbookRefresh)
     }
   }, [])
 
@@ -346,7 +374,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     const recalculated = recalculateDerivedData(next, workbook ?? next)
     setWorkbook(recalculated)
     setSaving(true)
-    void saveWorkbookData(recalculated).finally(() => setSaving(false))
+    void saveWorkbookData(recalculated).finally(() => {
+      setSaving(false)
+      localStorage.setItem(WORKBOOK_REFRESH_KEY, String(Date.now()))
+    })
   }
 
   function loginSubmit(event: FormEvent<HTMLFormElement>) {
@@ -590,23 +621,47 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     })
   }
 
-  function decideAdvance(advanceId: string, status: 'Approved' | 'Rejected') {
+  async function decideAdvance(advanceId: string, status: 'Approved' | 'Rejected') {
     if (!workbook || !currentUser) {
       return
     }
 
-    persist({
-      ...workbook,
-      advances: workbook.advances.map((entry) =>
-        entry.AdvanceID === advanceId
-          ? {
-              ...entry,
-              Status: status,
-              ApprovedBy: currentUser.EmployeeName,
-            }
-          : entry,
-      ),
-    })
+    setSaving(true)
+    try {
+      const endpoint = status === 'Approved' ? `/api/advance/${advanceId}/approve` : `/api/advance/${advanceId}/reject`
+
+      const response = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approvedBy: currentUser.EmployeeName }),
+      })
+
+      if (response.ok) {
+        const remote = await loadWorkbookData()
+        setWorkbook(remote ? recalculateDerivedData(remote, remote) : null)
+        localStorage.setItem(WORKBOOK_REFRESH_KEY, String(Date.now()))
+      } else {
+        console.error('Failed to update advance status', await response.text())
+      }
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function requestAdvanceDecision(advanceId: string, status: 'Approved' | 'Rejected') {
+    setPendingAdvanceDecision({ advanceId, status })
+  }
+
+  async function confirmAdvanceDecision() {
+    if (!pendingAdvanceDecision) {
+      return
+    }
+
+    const decision = pendingAdvanceDecision
+    setPendingAdvanceDecision(null)
+    await decideAdvance(decision.advanceId, decision.status)
   }
 
   function setSalaryStatus(salaryId: string, paidStatus: PaidStatus) {
@@ -1308,32 +1363,29 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                         <p className="text-sm font-bold text-[#3B0764] mt-1 truncate">{advance.Reason}</p>
                       </div>
                       <div>
-                        <span className="text-xs font-semibold text-[#6B7280] uppercase">Status</span>
-                        <Badge value={advance.Status} />
-                        {advance.ApprovedBy && (
-                          <p className="text-xs text-[#9CA3AF] mt-1">by {advance.ApprovedBy}</p>
+                        <span className="text-xs font-semibold text-[#6B7280] uppercase">Action</span>
+                        {isAdmin ? (
+                          <div className="flex flex-col gap-2 mt-2">
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center h-8 px-3 rounded-md text-xs font-bold text-white bg-[#10B981] hover:bg-[#059669]"
+                              onClick={() => requestAdvanceDecision(advance.AdvanceID, 'Approved')}
+                            >
+                              ✓ Approve
+                            </button>
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center h-8 px-3 rounded-md text-xs font-bold text-white bg-red-600 hover:bg-red-700"
+                              onClick={() => requestAdvanceDecision(advance.AdvanceID, 'Rejected')}
+                            >
+                              ✗ Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-[#9CA3AF] mt-1">-</p>
                         )}
                       </div>
                     </div>
-
-                    {isAdmin && isRequested && (
-                      <div className="flex gap-2 pt-3 border-t border-[#E5E7EB]">
-                        <button 
-                          type="button" 
-                          className="inline-flex items-center justify-center h-8 px-3 rounded-md text-xs font-bold text-white bg-[#10B981] hover:bg-[#059669]"
-                          onClick={() => decideAdvance(advance.AdvanceID, 'Approved')}
-                        >
-                          ✓ Approve
-                        </button>
-                        <button 
-                          type="button" 
-                          className="inline-flex items-center justify-center h-8 px-3 rounded-md text-xs font-bold text-white bg-red-600 hover:bg-red-700"
-                          onClick={() => decideAdvance(advance.AdvanceID, 'Rejected')}
-                        >
-                          ✗ Reject
-                        </button>
-                      </div>
-                    )}
                   </div>
                 )
               })}
@@ -1878,6 +1930,41 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
         </div>
 
       </main>
+
+      {pendingAdvanceDecision && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4 py-6">
+          <div className="w-full max-w-md rounded-2xl border border-[#E9D5FF] bg-white p-6 shadow-2xl">
+            <div className="mb-4">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#7C3AED]">Confirm action</p>
+              <h3 className="mt-2 text-xl font-bold text-[#3B0764]">
+                {pendingAdvanceDecision.status === 'Approved' ? 'Approve advance request?' : 'Reject advance request?'}
+              </h3>
+              <p className="mt-2 text-sm text-text-light">
+                This will update the selected employee advance request status.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-2.5">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-text-light bg-gray-100 hover:bg-gray-200"
+                onClick={() => setPendingAdvanceDecision(null)}
+                disabled={saving}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={`inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white ${pendingAdvanceDecision.status === 'Approved' ? 'bg-[#10B981] hover:bg-[#059669]' : 'bg-red-600 hover:bg-red-700'}`}
+                onClick={() => void confirmAdvanceDecision()}
+                disabled={saving}
+              >
+                {saving ? 'Saving...' : pendingAdvanceDecision.status === 'Approved' ? 'Yes, approve' : 'Yes, reject'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

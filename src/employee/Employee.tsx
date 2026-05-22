@@ -19,6 +19,8 @@ import {
 } from '../lib/employeeData'
 import { loadWorkbookData, saveWorkbookData } from '../lib/workbookApi'
 
+const WORKBOOK_REFRESH_KEY = 'jyothi-workbook-refresh'
+
 type TabId = 'dashboard' | 'profile' | 'employees' | 'attendance' | 'work' | 'advances' | 'salary' | 'company'
 
 type LoginState = {
@@ -203,6 +205,26 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   }, [])
 
   useEffect(() => {
+    function handleWorkbookRefresh(event: StorageEvent) {
+      if (event.key !== WORKBOOK_REFRESH_KEY) {
+        return
+      }
+
+      void loadWorkbookData().then((remote) => {
+        if (remote) {
+          setWorkbook(recalculateDerivedData(remote, remote))
+        }
+      })
+    }
+
+    window.addEventListener('storage', handleWorkbookRefresh)
+
+    return () => {
+      window.removeEventListener('storage', handleWorkbookRefresh)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!workbook || activeUserId) {
       return
     }
@@ -341,7 +363,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     const recalculated = recalculateDerivedData(next, workbook ?? next)
     setWorkbook(recalculated)
     setSaving(true)
-    void saveWorkbookData(recalculated).finally(() => setSaving(false))
+    void saveWorkbookData(recalculated).finally(() => {
+      setSaving(false)
+      localStorage.setItem(WORKBOOK_REFRESH_KEY, String(Date.now()))
+    })
   }
 
   function loginSubmit(event: FormEvent<HTMLFormElement>) {
@@ -742,10 +767,10 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                           <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150" onClick={() => resetEmployeeDraft(employee)}>
                             Edit
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-[#EC4899] hover:bg-[#DB2777] transition-all duration-150" onClick={() => toggleEmployeeStatus(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-accent-pink hover:bg-accent-pink transition-all duration-150" onClick={() => toggleEmployeeStatus(employee.EmployeeID)}>
                             {employee.Status === 'Active' ? 'Deactivate' : 'Activate'}
                           </button>
-                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-[#EC4899] hover:bg-[#DB2777] transition-all duration-150" onClick={() => resetPassword(employee.EmployeeID)}>
+                          <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-accent-pink hover:bg-accent-pink transition-all duration-150" onClick={() => resetPassword(employee.EmployeeID)}>
                             Reset
                           </button>
                           <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-red-600 hover:bg-red-700 transition-all duration-150" onClick={() => removeEmployee(employee.EmployeeID)}>
@@ -896,7 +921,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               <button type="submit" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]">Save attendance</button>
               <button
                 type="button"
-                className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-[#4C1D95] bg-gray-100 hover:bg-gray-200"
+                className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-text-light bg-gray-100 hover:bg-gray-200"
                 onClick={() =>
                   setAttendanceDraft({
                     ...EMPTY_ATTENDANCE,
@@ -913,7 +938,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
         <Panel title="Attendance log" subtitle="View your attendance history and worked hours.">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-4">
-            <select className="w-full box-border rounded-md border border-[#D8B4FE] bg-white py-2 px-3 text-[#4C1D95] outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20" value={selectedCompanyFilter} onChange={(event) => setSelectedCompanyFilter(event.target.value)}>
+            <select className="w-full box-border rounded-md border border-[#D8B4FE] bg-white py-2 px-3 text-text-light outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20" value={selectedCompanyFilter} onChange={(event) => setSelectedCompanyFilter(event.target.value)}>
               <option value="all">All companies</option>
               {workbook.companies.map((company) => (
                 <option key={company.CompanyID} value={company.CompanyName}>
@@ -921,7 +946,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                 </option>
               ))}
             </select>
-            <select className="w-full box-border rounded-md border border-[#D8B4FE] bg-white py-2 px-3 text-[#4C1D95] outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20" value={selectedMonthFilter} onChange={(event) => setSelectedMonthFilter(event.target.value)}>
+            <select className="w-full box-border rounded-md border border-[#D8B4FE] bg-white py-2 px-3 text-text-light outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20" value={selectedMonthFilter} onChange={(event) => setSelectedMonthFilter(event.target.value)}>
               {monthChoicesBackwards(12).map((month) => (
                 <option key={month} value={month}>
                   {formatMonth(month)}
@@ -1034,7 +1059,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               <button type="submit" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]">Submit request</button>
               <button
                 type="button"
-                className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-[#4C1D95] bg-gray-100 hover:bg-gray-200"
+                className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-text-light bg-gray-100 hover:bg-gray-200"
                 onClick={() =>
                   setAdvanceDraft({
                     ...EMPTY_ADVANCE,
@@ -1157,7 +1182,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
       <div className="grid grid-cols-1 gap-6">
         <Panel title="Current month pulse" subtitle="A snapshot of the chosen month for the active employee set.">
           <div className="flex flex-wrap gap-2.5 mb-4">
-            <select className="box-border rounded-md border border-[#D8B4FE] bg-white py-2 px-3 text-[#4C1D95] outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20" value={selectedMonthFilter} onChange={(event) => setSelectedMonthFilter(event.target.value)}>
+            <select className="box-border rounded-md border border-[#D8B4FE] bg-white py-2 px-3 text-text-light outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20" value={selectedMonthFilter} onChange={(event) => setSelectedMonthFilter(event.target.value)}>
               {monthChoicesBackwards(12).map((month) => (
                 <option key={month} value={month}>
                   {formatMonth(month)}
@@ -1303,7 +1328,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     const accountList = workbook?.employees.filter((employee) => employee.Role === 'Employee') ?? []
 
     return (
-      <div className="min-h-screen-vh bg-gradient-to-br from-[#FAF5FF] via-[#F3E8FF] to-[#EDE9FE] flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen-vh bg-linear-to-br from-background via-[#F3E8FF] to-[#EDE9FE] flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-5xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10">
             {/* Left Section - Brand & Benefits */}
@@ -1311,8 +1336,8 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               {/* Logo Area */}
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#7C3AED] to-[#A855F7] rounded-2xl blur-lg opacity-75"></div>
-                  <div className="relative bg-gradient-to-br from-[#7C3AED] to-[#A855F7] rounded-2xl p-4 sm:p-5 shadow-lg">
+                  <div className="absolute inset-0 bg-linear-to-r from-[#7C3AED] to-primary-purple rounded-2xl blur-lg opacity-75"></div>
+                  <div className="relative bg-linear-to-br from-[#7C3AED] to-primary-purple rounded-2xl p-4 sm:p-5 shadow-lg">
                     <span className="text-white font-black text-2xl sm:text-3xl tracking-wider">JR</span>
                   </div>
                 </div>
@@ -1324,7 +1349,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
               {/* Description */}
               <div className="space-y-4">
-                <p className="text-base sm:text-lg text-[#4C1D95] leading-relaxed font-medium">
+                <p className="text-base sm:text-lg text-text-light leading-relaxed font-medium">
                   Welcome to your personal workspace. Manage your professional data with ease.
                 </p>
               </div>
@@ -1332,55 +1357,55 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               {/* Benefits Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="group rounded-xl p-4 sm:p-5 bg-white border-2 border-[#E9D5FF] hover:border-[#D8B4FE] hover:shadow-lg transition-all duration-200 cursor-default">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-[#7C3AED] to-[#A855F7] bg-clip-text text-transparent">
+                  <div className="text-3xl font-bold bg-linear-to-r from-[#7C3AED] to-primary-purple bg-clip-text text-transparent">
                     {formatNumber(workbook?.employees.length ?? 0)}
                   </div>
                   <p className="text-xs sm:text-sm font-semibold text-[#7C3AED] uppercase tracking-widest mt-2">Employees</p>
-                  <p className="text-xs text-[#4C1D95] mt-1">in system</p>
+                  <p className="text-xs text-text-light mt-1">in system</p>
                 </div>
 
                 <div className="group rounded-xl p-4 sm:p-5 bg-white border-2 border-[#E9D5FF] hover:border-[#D8B4FE] hover:shadow-lg transition-all duration-200 cursor-default">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-[#7C3AED] to-[#A855F7] bg-clip-text text-transparent">
+                  <div className="text-3xl font-bold bg-linear-to-r from-[#7C3AED] to-primary-purple bg-clip-text text-transparent">
                     {formatNumber(workbook?.workDetails.length ?? 0)}
                   </div>
                   <p className="text-xs sm:text-sm font-semibold text-[#7C3AED] uppercase tracking-widest mt-2">Work Orders</p>
-                  <p className="text-xs text-[#4C1D95] mt-1">active</p>
+                  <p className="text-xs text-text-light mt-1">active</p>
                 </div>
 
                 <div className="group rounded-xl p-4 sm:p-5 bg-white border-2 border-[#E9D5FF] hover:border-[#D8B4FE] hover:shadow-lg transition-all duration-200 cursor-default">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-[#7C3AED] to-[#A855F7] bg-clip-text text-transparent">
+                  <div className="text-3xl font-bold bg-linear-to-r from-[#7C3AED] to-primary-purple bg-clip-text text-transparent">
                     {formatNumber(workbook?.advances.length ?? 0)}
                   </div>
                   <p className="text-xs sm:text-sm font-semibold text-[#7C3AED] uppercase tracking-widest mt-2">Advances</p>
-                  <p className="text-xs text-[#4C1D95] mt-1">tracked</p>
+                  <p className="text-xs text-text-light mt-1">tracked</p>
                 </div>
               </div>
 
               {/* Features List */}
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7] flex items-center justify-center">
+                  <div className="shrink-0 w-6 h-6 rounded-full bg-linear-to-r from-[#7C3AED] to-primary-purple flex items-center justify-center">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <span className="text-sm sm:text-base text-[#4C1D95]">Track attendance & work details</span>
+                  <span className="text-sm sm:text-base text-text-light">Track attendance & work details</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7] flex items-center justify-center">
+                  <div className="shrink-0 w-6 h-6 rounded-full bg-linear-to-r from-[#7C3AED] to-primary-purple flex items-center justify-center">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <span className="text-sm sm:text-base text-[#4C1D95]">Request & manage advances</span>
+                  <span className="text-sm sm:text-base text-text-light">Request & manage advances</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7] flex items-center justify-center">
+                  <div className="shrink-0 w-6 h-6 rounded-full bg-linear-to-r from-[#7C3AED] to-primary-purple flex items-center justify-center">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <span className="text-sm sm:text-base text-[#4C1D95]">View salary & payroll</span>
+                  <span className="text-sm sm:text-base text-text-light">View salary & payroll</span>
                 </div>
               </div>
             </div>
@@ -1388,13 +1413,13 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             {/* Right Section - Login Form */}
             <div className="order-1 lg:order-2">
               <div className="relative h-full">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#7C3AED]/10 to-[#A855F7]/10 rounded-3xl blur-xl"></div>
+                <div className="absolute inset-0 bg-linear-to-r from-[#7C3AED]/10 to-primary-purple/10 rounded-3xl blur-xl"></div>
                 <div className="relative bg-white rounded-3xl border-2 border-[#E9D5FF] shadow-2xl p-6 sm:p-8 lg:p-10 h-full flex flex-col justify-center">
                   {/* Header */}
                   <div className="mb-8 sm:mb-10">
                     <p className="text-xs sm:text-sm font-bold text-[#7C3AED] uppercase tracking-widest mb-3">Welcome Back</p>
                     <h2 className="text-2xl sm:text-3xl font-bold text-[#3B0764] mb-2">Staff Sign In</h2>
-                    <p className="text-sm sm:text-base text-[#4C1D95]">
+                    <p className="text-sm sm:text-base text-text-light">
                       Access your workspace securely
                     </p>
                   </div>
@@ -1444,15 +1469,15 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                     {/* Submit Button */}
                     <button 
                       type="submit"
-                      className="w-full h-12 sm:h-13 px-4 py-3 rounded-lg bg-gradient-to-r from-[#7C3AED] to-[#A855F7] text-white font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:from-[#6D28D9] hover:to-[#9333EA] transition-all duration-200 transform hover:scale-105 active:scale-95"
+                      className="w-full h-12 sm:h-13 px-4 py-3 rounded-lg bg-linear-to-r from-[#7C3AED] to-primary-purple text-white font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:from-[#6D28D9] hover:to-[#9333EA] transition-all duration-200 transform hover:scale-105 active:scale-95"
                     >
                       Enter Dashboard
                     </button>
 
                     {/* Admin Link */}
-                    <p className="text-center text-xs sm:text-sm text-[#4C1D95] mt-6 pt-4 border-t border-[#E9D5FF]">
+                    <p className="text-center text-xs sm:text-sm text-text-light mt-6 pt-4 border-t border-[#E9D5FF]">
                       Admin user?{' '}
-                      <a href="/admin" className="font-bold text-[#7C3AED] hover:text-[#A855F7] transition-colors duration-200">
+                      <a href="/admin" className="font-bold text-[#7C3AED] hover:text-primary-purple transition-colors duration-200">
                         Sign in here
                       </a>
                     </p>
@@ -1504,9 +1529,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   )
 
   return (
-    <div className="bg-[#FAF5FF] grid min-h-screen-vh min-w-0 grid-cols-1 text-[#4C1D95] lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+    <div className="bg-background grid min-h-screen-vh min-w-0 grid-cols-1 text-text-light lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
       {sidebarOpen && <div className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />}
-      <aside className={`bg-gradient-to-b from-[#7C3AED] to-[#A855F7] fixed inset-y-0 left-0 z-40 w-80 max-w-full flex-col gap-4 p-4 transition-transform duration-200 sm:gap-5 sm:p-6 lg:w-auto lg:sticky lg:top-0 lg:h-dvh lg:max-h-screen lg:overflow-y-auto lg:p-7 lg:self-start lg:translate-x-0 ${sidebarOpen ? 'flex translate-x-0' : 'flex -translate-x-full lg:translate-x-0'}`}>
+      <aside className={`bg-linear-to-b from-[#7C3AED] to-primary-purple fixed inset-y-0 left-0 z-40 w-80 max-w-full flex-col gap-4 p-4 transition-transform duration-200 sm:gap-5 sm:p-6 lg:w-auto lg:sticky lg:top-0 lg:h-dvh lg:max-h-screen lg:overflow-y-auto lg:p-7 lg:self-start lg:translate-x-0 ${sidebarOpen ? 'flex translate-x-0' : 'flex -translate-x-full lg:translate-x-0'}`}>
         <div className="flex items-start justify-between gap-3 rounded-lg border border-white/20 bg-white/10 p-4 shadow-sm sm:gap-4 sm:p-4.5 backdrop-blur-sm">
           <div className="flex min-w-0 items-start gap-3 text-white">
             <span className="grid size-10 shrink-0 place-items-center rounded-md bg-white/20 text-xs font-black tracking-widest text-white sm:size-11">JR</span>
@@ -1577,7 +1602,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             <div className="min-w-0">
               <span className="text-[#7C3AED] mb-2 inline-flex text-xs uppercase tracking-widest">Project data</span>
               <h2 className="text-xl font-semibold sm:text-2xl text-[#3B0764]">{isAdmin ? 'Admin control room' : 'Employee workspace'}</h2>
-              <p className="text-[#4C1D95] mt-1 max-w-2xl text-sm leading-relaxed">
+              <p className="text-text-light mt-1 max-w-2xl text-sm leading-relaxed">
                 Data is loaded live from PostgreSQL through the backend API.
               </p>
             </div>
@@ -1615,7 +1640,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           {activeTab === 'profile' && !isAdmin && (
             <Panel title="My profile" subtitle="Live employee details from PostgreSQL.">
               <div className="grid gap-5 sm:gap-6">
-                <div className="rounded-20 border border-[#E9D5FF] bg-[#FAF5FF] px-4 py-3 sm:px-5">
+                <div className="rounded-20 border border-[#E9D5FF] bg-background px-4 py-3 sm:px-5">
                   <p className="text-xs font-semibold uppercase tracking-widest text-[#7C3AED]">Profile summary</p>
                   <p className="mt-2 text-sm text-text-light">Keep these details up to date for attendance, payroll, and approvals.</p>
                 </div>
