@@ -119,11 +119,11 @@ function Panel({
   action?: ReactNode
 }) {
   return (
-    <section className="rounded-24 p-5 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg">
+    <section className="rounded-24 p-4 sm:p-5 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg">
       <header className="mb-4 grid gap-3 md:flex md:items-start md:justify-between md:gap-4">
         <div>
-          <h2>{title}</h2>
-          <p>{subtitle}</p>
+          <h2 className="text-lg sm:text-xl font-semibold text-[#3B0764]">{title}</h2>
+          <p className="text-sm text-text-light mt-1">{subtitle}</p>
         </div>
         {action}
       </header>
@@ -134,10 +134,10 @@ function Panel({
 
 function MetricCard({ label, value, hint }: { label: string; value: ReactNode; hint: string }) {
   return (
-    <article className="rounded-24 p-5 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <p>{hint}</p>
+    <article className="rounded-20 p-4 sm:p-5 bg-bg-panel border border-border-light shadow-sm">
+      <span className="text-xs font-semibold text-[#7C3AED] uppercase tracking-widest">{label}</span>
+      <strong className="block text-2xl sm:text-3xl text-[#3B0764] mt-2">{value}</strong>
+      <p className="text-sm text-text-light mt-2">{hint}</p>
     </article>
   )
 }
@@ -149,9 +149,9 @@ function BarChart({ data }: { data: Array<{ label: string; value: number }> }) {
     <div className="grid gap-3.5">
       {data.map((entry) => (
         <div key={entry.label} className="grid gap-2">
-          <div className="flex justify-between items-center gap-3 text-text-secondary">
-            <span>{entry.label}</span>
-            <strong>{formatNumber(entry.value)}</strong>
+          <div className="flex justify-between items-center gap-3 text-sm text-text-secondary">
+            <span className="truncate">{entry.label}</span>
+            <strong className="font-semibold">{formatNumber(entry.value)}</strong>
           </div>
           <div className="h-3 w-full overflow-hidden rounded-full bg-white/6">
             <div className="h-full rounded-full bg-gradient-bar" style={{ width: `${(entry.value / max) * 100}%` }} />
@@ -1034,14 +1034,21 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveAdvance}>
             <label>
               Employee
-              <select value={advanceDraft.EmployeeID} onChange={(event) => setAdvanceDraft((current) => ({ ...current, EmployeeID: event.target.value }))}>
-                <option value="">Select employee</option>
-                {workbook.employees.map((employee) => (
-                  <option key={employee.EmployeeID} value={employee.EmployeeID}>
-                    {employee.EmployeeName}
-                  </option>
-                ))}
-              </select>
+              {currentUser.Role === 'Admin' ? (
+                <select value={advanceDraft.EmployeeID} onChange={(event) => setAdvanceDraft((current) => ({ ...current, EmployeeID: event.target.value }))}>
+                  <option value="">Select employee</option>
+                  {workbook.employees.map((employee) => (
+                    <option key={employee.EmployeeID} value={employee.EmployeeID}>
+                      {employee.EmployeeName}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="mt-1">
+                  <p className="text-sm font-medium text-[#3B0764]">{currentUser.EmployeeName}</p>
+                  <input type="hidden" value={currentUser.EmployeeID} />
+                </div>
+              )}
             </label>
             <label>
               Date
@@ -1056,7 +1063,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               <textarea rows={4} value={advanceDraft.Reason} onChange={(event) => setAdvanceDraft((current) => ({ ...current, Reason: event.target.value }))} required />
             </label>
             <div className="flex flex-wrap gap-2.5 mt-1 sm:col-span-2 lg:col-span-3">
-              <button type="submit" className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9]">Submit request</button>
+              <button type="submit" disabled={saving} className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9] disabled:opacity-60 disabled:cursor-not-allowed">
+                {saving ? 'Submitting…' : 'Submit request'}
+              </button>
               <button
                 type="button"
                 className="inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-bold text-text-light bg-gray-100 hover:bg-gray-200"
@@ -1124,10 +1133,12 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
                       </div>
                       <div>
                         <span className="text-xs font-semibold text-[#6B7280] uppercase">Status</span>
-                        <Badge value={advance.Status} />
-                        {advance.ApprovedBy && (
-                          <p className="text-xs text-[#9CA3AF] mt-1">by {advance.ApprovedBy}</p>
-                        )}
+                        <div className="mt-1 flex items-center gap-2">
+                          <Badge value={advance.Status} />
+                          {advance.ApprovedBy && (
+                            <span className="text-xs text-[#9CA3AF]">by {advance.ApprovedBy}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="text-xs text-[#6B7280] mb-3 pb-3 border-b border-[#E5E7EB]">
@@ -1589,7 +1600,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             : 'flex min-w-0 min-h-0 flex-col gap-5 p-4 sm:gap-6 sm:p-6 lg:p-7'
         }
       >
-        <div className="grid min-w-0 gap-5 sm:gap-6">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 grid min-w-0 gap-5 sm:gap-6">
           <div className="flex items-center justify-between lg:hidden">
             <button type="button" className="rounded-12 p-2 text-text-light hover:bg-white/10" onClick={() => setSidebarOpen(!sidebarOpen)} title="Toggle menu">
               <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
