@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import App from './App'
 import Admin from './admin/Admin'
 import Employee from './employee/Employee'
+import LoginPage from './LoginPage'
 
 export default function RootRouter() {
   return (
@@ -9,6 +10,7 @@ export default function RootRouter() {
       <Route path="/" element={<App />} />
       <Route path="/admin/*" element={<Admin />} />
       <Route path="/employee/*" element={<Employee />} />
+        <Route path="/login" element={<LoginPage />} />
     </Routes>
   )
 }

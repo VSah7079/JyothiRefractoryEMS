@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import LoginPage from '../LoginPage'
 import {
   formatCurrency,
   formatDate,
@@ -174,7 +175,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     employeeId: '',
     password: '',
   })
-  const [loginError, setLoginError] = useState('')
+  
   const [employeeDraft, setEmployeeDraft] = useState<EmployeeDraft>(EMPTY_EMPLOYEE)
   const [editingEmployeeId, setEditingEmployeeId] = useState('')
   const [attendanceDraft, setAttendanceDraft] = useState<AttendanceDraft>(EMPTY_ATTENDANCE)
@@ -369,40 +370,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     })
   }
 
-  function loginSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    if (!workbook) {
-      return
-    }
-
-    const selectedAccount = workbook.employees.find((employee) => employee.EmployeeID === login.employeeId)
-
-    if (!selectedAccount) {
-      setLoginError('Choose a valid account.')
-      return
-    }
-
-    if (selectedAccount.Role !== 'Employee') {
-      setLoginError('Administrator accounts must sign in from the admin portal (/admin).')
-      return
-    }
-
-    if (selectedAccount.Password !== login.password) {
-      setLoginError('Invalid password.')
-      return
-    }
-
-    if (selectedAccount.Status !== 'Active') {
-      setLoginError('This account is inactive.')
-      return
-    }
-
-    setLoginError('')
-    setActiveUserId(selectedAccount.EmployeeID)
-    sessionStorage.setItem(EMPLOYEE_SESSION_KEY, selectedAccount.EmployeeID)
-    setActiveTab('dashboard')
-  }
+  
 
   function signOut() {
     setActiveUserId(null)
@@ -1336,177 +1304,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   }
 
   if (!workbook || !currentUser) {
-    const accountList = workbook?.employees.filter((employee) => employee.Role === 'Employee') ?? []
-
-    return (
-      <div className="min-h-screen-vh bg-linear-to-br from-background via-[#F3E8FF] to-[#EDE9FE] flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-5xl">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10">
-            {/* Left Section - Brand & Benefits */}
-            <div className="flex flex-col justify-center gap-6 sm:gap-8 order-2 lg:order-1">
-              {/* Logo Area */}
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-linear-to-r from-[#7C3AED] to-primary-purple rounded-2xl blur-lg opacity-75"></div>
-                  <div className="relative bg-linear-to-br from-[#7C3AED] to-primary-purple rounded-2xl p-4 sm:p-5 shadow-lg">
-                    <span className="text-white font-black text-2xl sm:text-3xl tracking-wider">JR</span>
-                  </div>
-                </div>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-[#3B0764] leading-tight">Jyothi Refractory</h1>
-                  <p className="text-sm sm:text-base text-[#7C3AED] font-medium">Employee Management Portal</p>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-4">
-                <p className="text-base sm:text-lg text-text-light leading-relaxed font-medium">
-                  Welcome to your personal workspace. Manage your professional data with ease.
-                </p>
-              </div>
-
-              {/* Benefits Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="group rounded-xl p-4 sm:p-5 bg-white border-2 border-[#E9D5FF] hover:border-[#D8B4FE] hover:shadow-lg transition-all duration-200 cursor-default">
-                  <div className="text-3xl font-bold bg-linear-to-r from-[#7C3AED] to-primary-purple bg-clip-text text-transparent">
-                    {formatNumber(workbook?.employees.length ?? 0)}
-                  </div>
-                  <p className="text-xs sm:text-sm font-semibold text-[#7C3AED] uppercase tracking-widest mt-2">Employees</p>
-                  <p className="text-xs text-text-light mt-1">in system</p>
-                </div>
-
-                <div className="group rounded-xl p-4 sm:p-5 bg-white border-2 border-[#E9D5FF] hover:border-[#D8B4FE] hover:shadow-lg transition-all duration-200 cursor-default">
-                  <div className="text-3xl font-bold bg-linear-to-r from-[#7C3AED] to-primary-purple bg-clip-text text-transparent">
-                    {formatNumber(workbook?.workDetails.length ?? 0)}
-                  </div>
-                  <p className="text-xs sm:text-sm font-semibold text-[#7C3AED] uppercase tracking-widest mt-2">Work Orders</p>
-                  <p className="text-xs text-text-light mt-1">active</p>
-                </div>
-
-                <div className="group rounded-xl p-4 sm:p-5 bg-white border-2 border-[#E9D5FF] hover:border-[#D8B4FE] hover:shadow-lg transition-all duration-200 cursor-default">
-                  <div className="text-3xl font-bold bg-linear-to-r from-[#7C3AED] to-primary-purple bg-clip-text text-transparent">
-                    {formatNumber(workbook?.advances.length ?? 0)}
-                  </div>
-                  <p className="text-xs sm:text-sm font-semibold text-[#7C3AED] uppercase tracking-widest mt-2">Advances</p>
-                  <p className="text-xs text-text-light mt-1">tracked</p>
-                </div>
-              </div>
-
-              {/* Features List */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="shrink-0 w-6 h-6 rounded-full bg-linear-to-r from-[#7C3AED] to-primary-purple flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <span className="text-sm sm:text-base text-text-light">Track attendance & work details</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="shrink-0 w-6 h-6 rounded-full bg-linear-to-r from-[#7C3AED] to-primary-purple flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <span className="text-sm sm:text-base text-text-light">Request & manage advances</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="shrink-0 w-6 h-6 rounded-full bg-linear-to-r from-[#7C3AED] to-primary-purple flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <span className="text-sm sm:text-base text-text-light">View salary & payroll</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Section - Login Form */}
-            <div className="order-1 lg:order-2">
-              <div className="relative h-full">
-                <div className="absolute inset-0 bg-linear-to-r from-[#7C3AED]/10 to-primary-purple/10 rounded-3xl blur-xl"></div>
-                <div className="relative bg-white rounded-3xl border-2 border-[#E9D5FF] shadow-2xl p-6 sm:p-8 lg:p-10 h-full flex flex-col justify-center">
-                  {/* Header */}
-                  <div className="mb-8 sm:mb-10">
-                    <p className="text-xs sm:text-sm font-bold text-[#7C3AED] uppercase tracking-widest mb-3">Welcome Back</p>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-[#3B0764] mb-2">Staff Sign In</h2>
-                    <p className="text-sm sm:text-base text-text-light">
-                      Access your workspace securely
-                    </p>
-                  </div>
-
-                  {/* Form */}
-                  <form className="space-y-5 sm:space-y-6 flex-1" onSubmit={loginSubmit}>
-                    {/* Employee Account Select */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-bold text-[#3B0764]">
-                        Select Your Account
-                      </label>
-                      <select 
-                        value={login.employeeId} 
-                        onChange={(event) => setLogin((current) => ({ ...current, employeeId: event.target.value }))}
-                        className="w-full px-4 py-3 rounded-lg border-2 border-[#E9D5FF] text-[#3B0764] font-medium focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all duration-200 bg-white hover:border-[#D8B4FE]"
-                      >
-                        <option value="">Choose your employee account</option>
-                        {accountList.map((employee) => (
-                          <option key={employee.EmployeeID} value={employee.EmployeeID}>
-                            {employee.EmployeeName} ({employee.EmployeeID})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Password Input */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-bold text-[#3B0764]">
-                        Password
-                      </label>
-                      <input 
-                        type="password" 
-                        value={login.password} 
-                        onChange={(event) => setLogin((current) => ({ ...current, password: event.target.value }))}
-                        placeholder="Enter your password"
-                        className="w-full px-4 py-3 rounded-lg border-2 border-[#E9D5FF] text-[#3B0764] font-medium placeholder:text-[#A095A8] focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all duration-200 bg-white hover:border-[#D8B4FE]"
-                      />
-                    </div>
-
-                    {/* Error Message */}
-                    {loginError && (
-                      <div className="p-3 sm:p-4 rounded-lg bg-red-50 border-2 border-red-200">
-                        <p className="text-sm text-red-700 font-medium">{loginError}</p>
-                      </div>
-                    )}
-
-                    {/* Submit Button */}
-                    <button 
-                      type="submit"
-                      className="w-full h-12 sm:h-13 px-4 py-3 rounded-lg bg-linear-to-r from-[#7C3AED] to-primary-purple text-white font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:from-[#6D28D9] hover:to-[#9333EA] transition-all duration-200 transform hover:scale-105 active:scale-95"
-                    >
-                      Enter Dashboard
-                    </button>
-
-                    {/* Admin Link */}
-                    <p className="text-center text-xs sm:text-sm text-text-light mt-6 pt-4 border-t border-[#E9D5FF]">
-                      Admin user?{' '}
-                      <a href="/admin" className="font-bold text-[#7C3AED] hover:text-primary-purple transition-colors duration-200">
-                        Sign in here
-                      </a>
-                    </p>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="mt-8 sm:mt-12 text-center">
-            <p className="text-xs sm:text-sm text-[#7C3AED] font-medium">
-              Secure • Fast • Reliable Employee Management
-            </p>
-          </div>
-        </div>
-      </div>
-    )
+    return <LoginPage />
   }
 
   const topActions = isAdmin ? (

@@ -84,10 +84,8 @@ const EMPLOYEE_TABS: Array<{ id: TabId; label: string }> = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'profile', label: 'Profile' },
   { id: 'attendance', label: 'Attendance' },
-  { id: 'work', label: 'Work Details' },
   { id: 'advances', label: 'Advances' },
   { id: 'salary', label: 'Salary' },
-  { id: 'company', label: 'Company' },
 ]
 
 const EMPTY_EMPLOYEE: EmployeeDraft = {
@@ -190,7 +188,7 @@ function BarChart({ data }: { data: Array<{ label: string; value: number }> }) {
   )
 }
 
-export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
+export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
   const navigate = useNavigate()
   const [workbook, setWorkbook] = useState<WorkbookData | null>(null)
   const [loading, setLoading] = useState(true)
