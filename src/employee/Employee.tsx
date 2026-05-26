@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import LoginPage from '../LoginPage'
+import { Navigate } from 'react-router-dom'
 import {
   formatCurrency,
   formatDate,
@@ -167,7 +168,13 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   const [workbook, setWorkbook] = useState<WorkbookData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [activeUserId, setActiveUserId] = useState<string | null>(null)
+  const [activeUserId, setActiveUserId] = useState<string | null>(() => {
+    try {
+      return typeof window !== 'undefined' ? sessionStorage.getItem(EMPLOYEE_SESSION_KEY) : null
+    } catch (e) {
+      return null
+    }
+  })
   const [activeTab, setActiveTab] = useState<TabId>(initialTab ?? 'dashboard')
     const [sidebarOpen, setSidebarOpen] = useState(false)
   const [login, setLogin] = useState<LoginState>({
@@ -1303,9 +1310,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
     )
   }
 
-  if (!workbook || !currentUser) {
-    return <LoginPage />
-  }
+    if (!workbook || !currentUser) {
+      return <Navigate to="/login" replace />
+    }
 
   const topActions = isAdmin ? (
     <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">

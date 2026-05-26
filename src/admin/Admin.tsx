@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
+import LoginPage from '../LoginPage'
 import {
   formatCurrency,
   formatDate,
@@ -194,15 +195,16 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [pendingAdvanceId, setPendingAdvanceId] = useState('')
-  const [activeUserId, setActiveUserId] = useState<string | null>(null)
+  const [activeUserId, setActiveUserId] = useState<string | null>(() => {
+    try {
+      return typeof window !== 'undefined' ? sessionStorage.getItem('jyothi-active-user') : null
+    } catch (e) {
+      return null
+    }
+  })
   const employeeFormRef = useRef<HTMLDivElement | null>(null)
   const [activeTab, setActiveTab] = useState<TabId>(initialTab ?? 'dashboard')
-  const [login, setLogin] = useState<LoginState>({
-    role: 'Employee',
-    employeeId: '',
-    password: '',
-  })
-  const [loginError, setLoginError] = useState('')
+  
   const [employeeDraft, setEmployeeDraft] = useState<EmployeeDraft>(EMPTY_EMPLOYEE)
   const [editingEmployeeId, setEditingEmployeeId] = useState('')
   const [attendanceDraft, setAttendanceDraft] = useState<AttendanceDraft>(EMPTY_ATTENDANCE)
@@ -266,7 +268,6 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
 
     if (savedUser && workbook.employees.some((employee) => employee.EmployeeID === savedUser)) {
       setActiveUserId(savedUser)
-      setLogin((current) => ({ ...current, employeeId: savedUser }))
     }
   }, [activeUserId, workbook])
 
@@ -278,9 +279,9 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
     if (!selectedCompanyId && workbook.companies[0]) {
       setSelectedCompanyId(workbook.companies[0].CompanyID)
       setAttendanceDraft((current) => ({ ...current, Company: workbook.companies[0].CompanyName }))
-      setAdvanceDraft((current) => ({ ...current, EmployeeID: currentUserIdToDefaultEmployee(workbook, login.role) }))
+      setAdvanceDraft((current) => ({ ...current, EmployeeID: currentUserIdToDefaultEmployee(workbook, currentUser?.Role ?? 'Employee') }))
     }
-  }, [login.role, selectedCompanyId, workbook])
+  }, [selectedCompanyId, workbook])
 
   const currentUser = useMemo(() => {
     if (!workbook || !activeUserId) {
@@ -315,7 +316,25 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
     [currentUser, isAdmin, workbook],
   )
 
-  const selectedCompany = workbook?.companies.find((company) => company.CompanyID === selectedCompanyId) ?? workbook?.companies[0] ?? null
+  const salarySeries = useMemo(() => {
+    const rows = visibleSalaries
+      .filter((salary) => salary.Month === selectedMonthFilter)
+      .map((salary) => ({
+        label: workbook?.employees.find((employee) => employee.EmployeeID === salary.EmployeeID)?.EmployeeName ?? salary.EmployeeID,
+        value: salary.NetPayble,
+      }))
+
+    return rows.length > 0 ? rows : [{ label: 'No salaries', value: 0 }]
+  }, [selectedMonthFilter, visibleSalaries, workbook?.employees])
+
+  const workSeries = useMemo(() => {
+    const rows = visibleWorks.map((work) => ({
+      label: work.WorkTitle,
+      value: work.PendingAmount,
+    }))
+
+    return rows.length > 0 ? rows : [{ label: 'No work items', value: 0 }]
+  }, [visibleWorks])
 
   const summary = useMemo(() => {
     if (!workbook) {
@@ -341,29 +360,24 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
       label: employee.EmployeeName,
       value: visibleAttendance.filter((entry) => entry.EmployeeID === employee.EmployeeID).length,
     }))
-
     return rows.length > 0 ? rows : [{ label: 'No data', value: 0 }]
   }, [visibleAttendance, visibleEmployees])
 
-  const salarySeries = useMemo(() => {
-    const rows = visibleSalaries
-      .filter((salary) => salary.Month === selectedMonthFilter)
-      .map((salary) => ({
-        label: workbook?.employees.find((employee) => employee.EmployeeID === salary.EmployeeID)?.EmployeeName ?? salary.EmployeeID,
-        value: salary.NetPayble,
-      }))
+  if (loading) {
+    return (
+      <div className="grid min-h-screen-vh place-items-center bg-gradient-hero p-4 sm:p-6 lg:p-8">
+        <div className="grid w-full max-w-lg gap-4 content-start rounded-24 border border-border-light bg-bg-panel p-5 shadow-glass backdrop-blur-lg sm:p-7">
+          <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Loading data</span>
+          <h1>Preparing admin workspace</h1>
+          <p>Reading live database state from the backend API.</p>
+        </div>
+      </div>
+    )
+  }
 
-    return rows.length > 0 ? rows : [{ label: 'No salaries', value: 0 }]
-  }, [selectedMonthFilter, visibleSalaries, workbook?.employees])
+  if (!workbook || !currentUser) return <Navigate to="/login" replace />
 
-  const workSeries = useMemo(() => {
-    const rows = visibleWorks.map((work) => ({
-      label: work.WorkTitle,
-      value: work.PendingAmount,
-    }))
-
-    return rows.length > 0 ? rows : [{ label: 'No work items', value: 0 }]
-  }, [visibleWorks])
+  const selectedCompany = workbook?.companies.find((company) => company.CompanyID === selectedCompanyId) ?? workbook?.companies[0] ?? null
 
   function persist(next: WorkbookData) {
     const recalculated = recalculateDerivedData(next, workbook ?? next)
@@ -375,50 +389,10 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
     })
   }
 
-  function loginSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    if (!workbook) {
-      return
-    }
-
-    const selectedAccount = workbook.employees.find((employee) => employee.EmployeeID === login.employeeId)
-
-    if (!selectedAccount) {
-      setLoginError('Choose a valid account.')
-      return
-    }
-
-    if (selectedAccount.Role !== login.role) {
-      setLoginError('The account does not match the chosen role.')
-      return
-    }
-
-    if (selectedAccount.Password !== login.password) {
-      setLoginError('Invalid password.')
-      return
-    }
-
-    if (selectedAccount.Status !== 'Active') {
-      setLoginError('This account is inactive.')
-      return
-    }
-
-    setLoginError('')
-    setActiveUserId(selectedAccount.EmployeeID)
-    sessionStorage.setItem('jyothi-active-user', selectedAccount.EmployeeID)
-    setActiveTab('dashboard')
-    
-    // Redirect based on role
-    if (selectedAccount.Role === 'Employee') {
-      navigate('/employee')
-    }
-  }
-
   function signOut() {
     setActiveUserId(null)
-    setLogin((current) => ({ ...current, password: '' }))
     sessionStorage.removeItem('jyothi-active-user')
+    navigate('/login', { replace: true })
   }
 
   function resetEmployeeDraft(record?: Employee) {
@@ -438,9 +412,6 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
       Status: record.Status,
     })
     setEditingEmployeeId(record.EmployeeID)
-    window.requestAnimationFrame(() => {
-      employeeFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    })
   }
 
   function saveEmployee(event: FormEvent<HTMLFormElement>) {
@@ -479,9 +450,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
     persist({
       ...workbook,
       employees: workbook.employees.map((employee) =>
-        employee.EmployeeID === employeeId
-          ? { ...employee, Status: employee.Status === 'Active' ? 'Inactive' : 'Active' }
-          : employee,
+        employee.EmployeeID === employeeId ? { ...employee, Status: employee.Status === 'Active' ? 'Inactive' : 'Active' } : employee,
       ),
     })
   }
@@ -763,18 +732,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
   }
 
   function setRoleAndAccount(role: UserRole) {
-    if (!workbook) {
-      setLogin((current) => ({ ...current, role }))
-      return
-    }
-
-    const firstMatch = workbook.employees.find((employee) => employee.Role === role)
-
-    setLogin({
-      role,
-      employeeId: firstMatch?.EmployeeID ?? '',
-      password: '',
-    })
+    // removed: centralized login page handles role/account selection
   }
 
   function renderDashboard() {
@@ -1721,181 +1679,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
     )
   }
 
-  if (!workbook || !currentUser) {
-    const accountList = workbook?.employees.filter((employee) => employee.Role === login.role) ?? []
-
-    return (
-      <div className="min-h-screen-vh bg-linear-to-br from-[#2D1B4E] via-[#3B0764] to-text-light flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-5xl">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10">
-            {/* Left Section - Admin Features */}
-            <div className="flex flex-col justify-center gap-6 sm:gap-8 order-2 lg:order-1 text-white">
-              {/* Logo Area */}
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-accent-pink rounded-2xl blur-lg opacity-50"></div>
-                  <div className="relative bg-linear-to-br from-indigo to-accent-pink rounded-2xl p-4 sm:p-5 shadow-2xl">
-                    <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 1C6.48 1 2 5.48 2 11s4.48 10 10 10 10-4.48 10-10S17.52 1 12 1zm-2 15l-5-5 1.41-1.41L10 13.17l7.59-7.59L19 7l-9 9z"/>
-                    </svg>
-                  </div>
-                </div>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">Admin Control</h1>
-                  <p className="text-sm sm:text-base text-primary-purple font-medium">Management Portal</p>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-4">
-                <p className="text-base sm:text-lg text-[#E9D5FF] leading-relaxed font-medium">
-                  Full control over employee management, attendance, payroll, and organizational data.
-                </p>
-              </div>
-
-              {/* Admin Capabilities Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="group rounded-xl p-4 sm:p-5 bg-white/10 border-2 border-[#7C3AED]/50 hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/20 transition-all duration-200 cursor-default backdrop-blur-sm">
-                  <div className="text-2xl font-bold text-accent-pink mb-2">👥</div>
-                  <p className="text-sm font-semibold text-white uppercase tracking-widest">Manage Employees</p>
-                  <p className="text-xs text-primary-purple mt-1">Add, edit, and control access</p>
-                </div>
-
-                <div className="group rounded-xl p-4 sm:p-5 bg-white/10 border-2 border-[#7C3AED]/50 hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/20 transition-all duration-200 cursor-default backdrop-blur-sm">
-                  <div className="text-2xl font-bold text-accent-pink mb-2">💰</div>
-                  <p className="text-sm font-semibold text-white uppercase tracking-widest">Payroll Control</p>
-                  <p className="text-xs text-primary-purple mt-1">Process salaries and advances</p>
-                </div>
-
-                <div className="group rounded-xl p-4 sm:p-5 bg-white/10 border-2 border-[#7C3AED]/50 hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/20 transition-all duration-200 cursor-default backdrop-blur-sm">
-                  <div className="text-2xl font-bold text-accent-pink mb-2">📊</div>
-                  <p className="text-sm font-semibold text-white uppercase tracking-widest">Analytics</p>
-                  <p className="text-xs text-primary-purple mt-1">View reports and metrics</p>
-                </div>
-
-                <div className="group rounded-xl p-4 sm:p-5 bg-white/10 border-2 border-[#7C3AED]/50 hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/20 transition-all duration-200 cursor-default backdrop-blur-sm">
-                  <div className="text-2xl font-bold text-accent-pink mb-2">🔐</div>
-                  <p className="text-sm font-semibold text-white uppercase tracking-widest">Secure Access</p>
-                  <p className="text-xs text-primary-purple mt-1">Role-based permissions</p>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="border-t border-[#7C3AED]/30 pt-6">
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-bold text-accent-pink">{formatNumber(workbook?.employees.length ?? 0)}</div>
-                    <p className="text-xs text-primary-purple mt-1">Employees</p>
-                  </div>
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-bold text-accent-pink">{formatNumber(workbook?.workDetails.length ?? 0)}</div>
-                    <p className="text-xs text-primary-purple mt-1">Work Orders</p>
-                  </div>
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-bold text-accent-pink">{formatNumber(workbook?.advances.length ?? 0)}</div>
-                    <p className="text-xs text-primary-purple mt-1">Advances</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Section - Login Form */}
-            <div className="order-1 lg:order-2">
-              <div className="relative h-full">
-                <div className="absolute inset-0 bg-linear-to-r from-accent-pink/20 to-[#7C3AED]/20 rounded-3xl blur-xl"></div>
-                <div className="relative bg-linear-to-br from-white to-background rounded-3xl border-2 border-[#E9D5FF] shadow-2xl p-6 sm:p-8 lg:p-10 h-full flex flex-col justify-center">
-                  {/* Header */}
-                  <div className="mb-8 sm:mb-10">
-                    <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full bg-accent-pink/10">
-                      <div className="w-2 h-2 rounded-full bg-accent-pink"></div>
-                      <p className="text-xs sm:text-sm font-bold text-accent-pink uppercase tracking-widest">Admin Access</p>
-                    </div>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-[#3B0764] mb-2">Administration Portal</h2>
-                    <p className="text-sm sm:text-base text-text-light">
-                      Sign in with your administrative credentials
-                    </p>
-                  </div>
-
-                  {/* Form */}
-                  <form className="space-y-5 sm:space-y-6 flex-1" onSubmit={loginSubmit}>
-                    {/* Role Select */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-bold text-[#3B0764]">
-                        Account Role
-                      </label>
-                      <select 
-                        value={login.role}
-                        onChange={(event) => setRoleAndAccount(event.target.value as UserRole)}
-                        className="w-full px-4 py-3 rounded-lg border-2 border-[#E9D5FF] text-[#3B0764] font-medium focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all duration-200 bg-white hover:border-[#D8B4FE]"
-                      >
-                        <option value="Admin">Admin</option>
-                        <option value="Employee">Employee</option>
-                      </select>
-                    </div>
-
-                    {/* Account Select */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-bold text-[#3B0764]">
-                        {login.role === 'Admin' ? 'Administrator Account' : 'Employee Account'}
-                      </label>
-                      <select 
-                        value={login.employeeId} 
-                        onChange={(event) => setLogin((current) => ({ ...current, employeeId: event.target.value }))}
-                        className="w-full px-4 py-3 rounded-lg border-2 border-[#E9D5FF] text-[#3B0764] font-medium focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all duration-200 bg-white hover:border-[#D8B4FE]"
-                      >
-                        <option value="">Select {login.role === 'Admin' ? 'administrator' : 'employee'}</option>
-                        {accountList.map((employee) => (
-                          <option key={employee.EmployeeID} value={employee.EmployeeID}>
-                            {employee.EmployeeName} ({employee.EmployeeID})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Password Input */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-bold text-[#3B0764]">
-                        Security Password
-                      </label>
-                      <input 
-                        type="password" 
-                        value={login.password} 
-                        onChange={(event) => setLogin((current) => ({ ...current, password: event.target.value }))}
-                        placeholder="Enter your password"
-                        className="w-full px-4 py-3 rounded-lg border-2 border-[#E9D5FF] text-[#3B0764] font-medium placeholder:text-[#A095A8] focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all duration-200 bg-white hover:border-[#D8B4FE]"
-                      />
-                    </div>
-
-                    {/* Error Message */}
-                    {loginError && (
-                      <div className="p-3 sm:p-4 rounded-lg bg-red-50 border-2 border-red-200">
-                        <p className="text-sm text-red-700 font-medium">{loginError}</p>
-                      </div>
-                    )}
-
-                    {/* Submit Button */}
-                    <button 
-                      type="submit"
-                      className="w-full h-12 sm:h-13 px-4 py-3 rounded-lg bg-linear-to-r from-accent-pink to-[#7C3AED] text-white font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:from-[#DB2777] hover:to-[#6D28D9] transition-all duration-200 transform hover:scale-105 active:scale-95"
-                    >
-                      Access Control Room
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="mt-8 sm:mt-12 text-center">
-            <p className="text-xs sm:text-sm text-primary-purple font-medium">
-              Secure Administration • Full Control • Data Protection
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  if (!workbook || !currentUser) return <Navigate to="/login" replace />
 
   const topActions = isAdmin ? (
     <div className="flex flex-wrap gap-2.5">
