@@ -1,6 +1,5 @@
 ﻿import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
-import LoginPage from '../LoginPage'
 import {
   formatCurrency,
   formatDate,
@@ -28,11 +27,7 @@ const WORKBOOK_REFRESH_KEY = 'jyothi-workbook-refresh'
 
 type TabId = 'dashboard' | 'profile' | 'employees' | 'attendance' | 'work' | 'advances' | 'salary' | 'company'
 
-type LoginState = {
-  role: UserRole
-  employeeId: string
-  password: string
-}
+// login state type removed — centralized LoginPage handles login
 
 type EmployeeDraft = {
   EmployeeID: string
@@ -203,6 +198,8 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
     }
   })
   const employeeFormRef = useRef<HTMLDivElement | null>(null)
+  const attendanceFormRef = useRef<HTMLDivElement | null>(null)
+  const workFormRef = useRef<HTMLDivElement | null>(null)
   const [activeTab, setActiveTab] = useState<TabId>(initialTab ?? 'dashboard')
   
   const [employeeDraft, setEmployeeDraft] = useState<EmployeeDraft>(EMPTY_EMPLOYEE)
@@ -412,6 +409,9 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
       Status: record.Status,
     })
     setEditingEmployeeId(record.EmployeeID)
+    window.requestAnimationFrame(() => {
+      employeeFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   }
 
   function saveEmployee(event: FormEvent<HTMLFormElement>) {
@@ -504,7 +504,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
     setEditingAttendanceId(record.AttendanceID)
     setActiveTab('attendance')
     window.requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      attendanceFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
   }
 
@@ -584,6 +584,10 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
       Status: record.Status,
     })
     setEditingWorkId(record.WorkID)
+    setActiveTab('work')
+    window.requestAnimationFrame(() => {
+      workFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   }
 
   function saveWork(event: FormEvent<HTMLFormElement>) {
@@ -731,9 +735,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
     }
   }
 
-  function setRoleAndAccount(role: UserRole) {
-    // removed: centralized login page handles role/account selection
-  }
+  // `setRoleAndAccount` removed — centralized login page handles role/account selection
 
   function renderDashboard() {
     if (!summary) {
@@ -974,6 +976,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
 
     return (
       <div className="grid grid-cols-1 gap-6">
+        <div ref={attendanceFormRef}>
         <Panel title={editingAttendanceId ? 'Edit attendance' : 'Add attendance'} subtitle="The logged-in user can create an entry for self or others.">
           <form className="grid grid-cols-1 sm:grid-cols-3 gap-4" onSubmit={saveAttendance}>
             <label>
@@ -1038,6 +1041,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
             </div>
           </form>
         </Panel>
+        </div>
 
         <Panel title="Attendance Register" subtitle={`${filteredAttendance.length} record(s) for filters applied`}>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
@@ -1138,6 +1142,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
     return (
       <div className="grid grid-cols-1 gap-6">
         {isAdmin ? (
+          <div ref={workFormRef}>
           <Panel title={editingWorkId ? 'Edit work' : 'Add work'} subtitle="Create new work orders or update existing ones.">
             <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveWork}>
               <label>
@@ -1186,6 +1191,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
               </div>
             </form>
           </Panel>
+          </div>
         ) : null}
 
         <Panel title="Work Overview" subtitle={`${visibleWorks.length} total work order(s)`}>

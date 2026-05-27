@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
-import LoginPage from '../LoginPage'
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import {
   formatCurrency,
@@ -25,12 +24,7 @@ const WORKBOOK_REFRESH_KEY = 'jyothi-workbook-refresh'
 
 type TabId = 'dashboard' | 'profile' | 'employees' | 'attendance' | 'work' | 'advances' | 'salary' | 'company'
 
-type LoginState = {
-  role: UserRole
-  employeeId: string
-  password: string
-}
-
+type LoginState = { role: UserRole; employeeId: string; password: string }
 type EmployeeDraft = {
   EmployeeID: string
   EmployeeName: string
@@ -168,6 +162,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
   const [workbook, setWorkbook] = useState<WorkbookData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const employeeFormRef = useRef<HTMLDivElement | null>(null)
   const [activeUserId, setActiveUserId] = useState<string | null>(() => {
     try {
       return typeof window !== 'undefined' ? sessionStorage.getItem(EMPLOYEE_SESSION_KEY) : null
@@ -402,6 +397,9 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
       Status: record.Status,
     })
     setEditingEmployeeId(record.EmployeeID)
+    window.requestAnimationFrame(() => {
+      employeeFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   }
 
   function saveEmployee(event: FormEvent<HTMLFormElement>) {
@@ -760,6 +758,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           </div>
         </Panel>
 
+        <div ref={employeeFormRef}>
         <Panel title={editingEmployeeId ? 'Edit employee' : 'Add employee'} subtitle="Every field is synchronized to the workbook.">
           <form className="grid gap-3" onSubmit={saveEmployee}>
             <label>
@@ -829,6 +828,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             </div>
           </form>
         </Panel>
+        </div>
       </div>
     )
   }
