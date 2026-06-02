@@ -257,7 +257,7 @@ export function normalizeWorkbookData(partial: Partial<WorkbookData>): WorkbookD
   }
 }
 
-function createSeedData(): WorkbookData {
+export function createSeedWorkbookData(): WorkbookData {
   return normalizeWorkbookData({
     employees: [
       {
