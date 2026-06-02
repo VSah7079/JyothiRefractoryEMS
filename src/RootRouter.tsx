@@ -10,7 +10,8 @@ export default function RootRouter() {
       <Route path="/" element={<App />} />
       <Route path="/admin/*" element={<Admin />} />
       <Route path="/employee/*" element={<Employee />} />
-        <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="*" element={<LoginPage />} />
     </Routes>
   )
 }

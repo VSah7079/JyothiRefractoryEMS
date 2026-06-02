@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom'
 
 export default function App() {
-  return <Navigate to="/employee" replace />
+  return <Navigate to="/login" replace />
 }
