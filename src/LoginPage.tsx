@@ -105,7 +105,7 @@ export default function LoginPage() {
             </h2>
 
             <p className="mt-3 text-base text-white/75">
-              Pick a role, choose an account, and open the right dashboard with workbook data stored locally in your browser.
+              Pick a role, choose an account, and open the right dashboard with live workbook data: advances, attendance, and salary.
             </p>
 
             <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">

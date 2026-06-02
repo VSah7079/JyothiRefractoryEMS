@@ -18,7 +18,7 @@ import {
   type UserRole,
   type WorkbookData,
 } from '../lib/employeeData'
-import { downloadWorkbookData, loadWorkbookData, saveWorkbookData } from '../lib/workbookApi'
+import { loadWorkbookData, saveWorkbookData } from '../lib/workbookApi'
 
 const WORKBOOK_REFRESH_KEY = 'jyothi-workbook-refresh'
 
@@ -288,20 +288,6 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
     return workbook.employees.find((employee) => employee.EmployeeID === activeUserId) ?? null
   }, [activeUserId, workbook])
-
-  const displayedUser = useMemo(() => {
-    // Prefer explicit employee session key; fall back to legacy admin key if present
-    if (!workbook) return null
-    try {
-      const empKey = typeof window !== 'undefined' ? sessionStorage.getItem(EMPLOYEE_SESSION_KEY) : null
-      const legacyKey = typeof window !== 'undefined' ? sessionStorage.getItem('jyothi-active-user') : null
-      const sid = activeUserId ?? empKey ?? legacyKey
-      if (!sid) return null
-      return workbook.employees.find((e) => e.EmployeeID === sid) ?? null
-    } catch (e) {
-      return currentUser
-    }
-  }, [workbook, currentUser, activeUserId])
 
   const isAdmin = currentUser?.Role === 'Admin'
   const tabs = isAdmin ? ADMIN_TABS : EMPLOYEE_TABS
@@ -864,24 +850,17 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
           <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveAttendance}>
             <label>
               Employee
-              {currentUser?.Role === 'Admin' ? (
-                <select
-                  value={attendanceDraft.EmployeeID}
-                  onChange={(event) => setAttendanceDraft((current) => ({ ...current, EmployeeID: event.target.value }))}
-                >
-                  <option value="">Select employee</option>
-                  {workbook.employees.map((employee) => (
-                    <option key={employee.EmployeeID} value={employee.EmployeeID}>
-                      {employee.EmployeeName}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <div className="mt-1">
-                  <p className="text-sm font-medium text-[#3B0764]">{currentUser?.EmployeeName}</p>
-                  <input type="hidden" value={currentUser?.EmployeeID} />
-                </div>
-              )}
+              <select
+                value={attendanceDraft.EmployeeID}
+                onChange={(event) => setAttendanceDraft((current) => ({ ...current, EmployeeID: event.target.value }))}
+              >
+                <option value="">Select employee</option>
+                {workbook.employees.map((employee) => (
+                  <option key={employee.EmployeeID} value={employee.EmployeeID}>
+                    {employee.EmployeeName}
+                  </option>
+                ))}
+              </select>
             </label>
             <label>
               Date
@@ -1024,17 +1003,13 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
       .filter((a) => a.Status === 'Approved')
       .reduce((sum, a) => sum + a.AdvanceAmount, 0)
 
-    // If the logged-in user is not an admin and has no advances, hide the advance requests list
-    const hasVisibleAdvances = (visibleAdvances?.length ?? 0) > 0
-
     return (
       <div className="grid grid-cols-1 gap-6">
         <Panel title="Request advance" subtitle="Create a new request for the current employee or another selected worker.">
           <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveAdvance}>
-            </Panel>
-
-            {isAdmin || hasVisibleAdvances ? (
-              <Panel title="Advance requests" subtitle="Employees can request advances; admins can approve or reject them.">
+            <label>
+              Employee
+              {currentUser.Role === 'Admin' ? (
                 <select value={advanceDraft.EmployeeID} onChange={(event) => setAdvanceDraft((current) => ({ ...current, EmployeeID: event.target.value }))}>
                   <option value="">Select employee</option>
                   {workbook.employees.map((employee) => (
@@ -1171,8 +1146,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               <p className="text-[#6B7280] font-medium">No advance requests found.</p>
             </div>
           )}
-          </Panel>
-        ) : null}
+        </Panel>
       </div>
     )
   }
@@ -1330,7 +1304,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
         <div className="grid w-full max-w-lg gap-4 content-start rounded-24 border border-border-light bg-bg-panel p-5 shadow-glass backdrop-blur-lg sm:p-7">
           <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Loading data</span>
           <h1>Preparing employee management data</h1>
-          <p>Reading saved workbook data from local browser storage.</p>
+          <p>Reading live database state from the backend API.</p>
         </div>
       </div>
     )
@@ -1350,13 +1324,12 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
       >
         Refresh totals
       </button>
-      <button
-        type="button"
-        className="inline-flex items-center justify-center rounded-md border-0 bg-indigo py-2 px-4 font-bold text-white transition-all duration-150 hover:bg-indigoHover"
-        onClick={() => { if (workbook) void downloadWorkbookData(workbook) }}
+      <a
+        className="inline-flex items-center justify-center rounded-md border-0 bg-indigo py-2 px-4 font-bold text-white no-underline transition-all duration-150 hover:bg-indigoHover"
+        href="/api/download"
       >
         Download Data
-      </button>
+      </a>
     </div>
   ) : (
     <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
@@ -1380,12 +1353,12 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
             <span className="grid size-10 shrink-0 place-items-center rounded-md bg-white/20 text-xs font-black tracking-widest text-white sm:size-11">JR</span>
             <div className="min-w-0">
               <span className="mb-1.5 inline-flex text-xs font-semibold uppercase opacity-80">Logged in as</span>
-              <strong className="block truncate text-[0.95rem] sm:text-base">{displayedUser?.EmployeeName ?? 'Not signed in'}</strong>
-              <p className="truncate text-sm opacity-75">{displayedUser?.EmployeeID ?? ''}</p>
+              <strong className="block truncate text-[0.95rem] sm:text-base">{currentUser.EmployeeName}</strong>
+              <p className="truncate text-sm opacity-75">{currentUser.EmployeeID}</p>
             </div>
           </div>
-            <div className="flex items-start gap-2">
-            <Badge value={displayedUser?.Status ?? 'Inactive'} />
+          <div className="flex items-start gap-2">
+            <Badge value={currentUser.Status} />
             <button type="button" className="shrink-0 rounded-md p-2 text-white hover:bg-white/10 lg:hidden" onClick={() => setSidebarOpen(false)} title="Close menu">
               <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1446,7 +1419,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
               <span className="text-[#7C3AED] mb-2 inline-flex text-xs uppercase tracking-widest">Project data</span>
               <h2 className="text-xl font-semibold sm:text-2xl text-[#3B0764]">{isAdmin ? 'Admin control room' : 'Employee workspace'}</h2>
               <p className="text-text-light mt-1 max-w-2xl text-sm leading-relaxed">
-                Data is loaded from local JSON storage in your browser.
+                Data is loaded live from PostgreSQL through the backend API.
               </p>
             </div>
             <div className="shrink-0">{topActions}</div>
@@ -1481,7 +1454,7 @@ export default function Employee({ initialTab }: { initialTab?: TabId } = {}) {
 
           {activeTab === 'dashboard' && renderDashboard()}
           {activeTab === 'profile' && !isAdmin && (
-            <Panel title="My profile" subtitle="Live employee details from local browser storage.">
+            <Panel title="My profile" subtitle="Live employee details from PostgreSQL.">
               <div className="grid gap-5 sm:gap-6">
                 <div className="rounded-20 border border-[#E9D5FF] bg-background px-4 py-3 sm:px-5">
                   <p className="text-xs font-semibold uppercase tracking-widest text-[#7C3AED]">Profile summary</p>
