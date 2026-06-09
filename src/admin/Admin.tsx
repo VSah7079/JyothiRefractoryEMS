@@ -21,8 +21,7 @@ import {
   type WorkStatus,
   type WorkbookData,
 } from '../lib/employeeData'
-import { downloadWorkbookData, downloadWorkbookJSON, loadWorkbookData, saveWorkbookData } from '../lib/workbookApi'
-import { normalizeWorkbookData } from '../lib/employeeData'
+import { loadWorkbookData, saveWorkbookData } from '../lib/workbookApi'
 
 const WORKBOOK_REFRESH_KEY = 'jyothi-workbook-refresh'
 
@@ -215,7 +214,6 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
   const [selectedMonthFilter, setSelectedMonthFilter] = useState(monthKeyFromNow())
   const [selectedDateFilter, setSelectedDateFilter] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
-  const importFileRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     let isMounted = true
@@ -368,7 +366,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
         <div className="grid w-full max-w-lg gap-4 content-start rounded-24 border border-border-light bg-bg-panel p-5 shadow-glass backdrop-blur-lg sm:p-7">
           <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Loading data</span>
           <h1>Preparing admin workspace</h1>
-          <p>Reading saved workbook data from local browser storage.</p>
+          <p>Reading live database state from the backend API.</p>
         </div>
       </div>
     )
@@ -800,7 +798,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
     return (
       <div className="grid grid-cols-1 gap-6">
         <div ref={employeeFormRef}>
-          <Panel title={editingEmployeeId ? 'Edit employee' : 'Add employee'} subtitle="Every field is saved to the local JSON store.">
+          <Panel title={editingEmployeeId ? 'Edit employee' : 'Add employee'} subtitle="Every field is synchronized to the database.">
             <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" onSubmit={saveEmployee}>
             <label>
               Employee ID
@@ -1665,9 +1663,9 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
           </div>
           {isAdmin && (
             <div className="flex flex-wrap gap-2 mt-3">
-              <button type="button" className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md cursor-pointer text-sm font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150" onClick={() => { if (workbook) void downloadWorkbookData(workbook) }}>
+              <a className="inline-flex justify-center items-center py-1.5 px-3 border-0 rounded-md cursor-pointer text-sm font-bold text-white bg-indigo hover:bg-indigoHover transition-all duration-150" href="/api/download">
                 Download Data
-              </button>
+              </a>
             </div>
           )}
         </Panel>
@@ -1681,7 +1679,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
         <div className="grid gap-4.5 content-start p-7 bg-bg-panel border border-border-light shadow-glass backdrop-blur-lg rounded-24">
           <span className="inline-flex mb-2 text-accent-gold uppercase tracking-uppercase text-xs-tiny">Loading data</span>
           <h1>Preparing employee management data</h1>
-          <p>Reading saved workbook data from local browser storage.</p>
+          <p>Reading live database state from the backend API.</p>
         </div>
       </div>
     )
@@ -1692,36 +1690,12 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
   const topActions = isAdmin ? (
     <div className="flex flex-wrap gap-2.5">
       <Badge value={saving ? 'Syncing' : 'Live'} />
-      <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer bg-white text-[#3B0764] hover:bg-gray-100 transition-all duration-150" onClick={() => { if (workbook) downloadWorkbookJSON(workbook) }}>
-        Export JSON
-      </button>
-      <input ref={importFileRef} type="file" accept="application/json" style={{ display: 'none' }} onChange={(e) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-        const reader = new FileReader()
-        reader.onload = () => {
-          try {
-            const parsed = JSON.parse(String(reader.result))
-            const normalized = normalizeWorkbookData(parsed)
-            persist(normalized)
-          } catch (err) {
-            // eslint-disable-next-line no-alert
-            alert('Invalid JSON file')
-          }
-        }
-        reader.readAsText(file)
-        // reset value so same file can be reselected later
-        if (importFileRef.current) importFileRef.current.value = ''
-      }} />
-      <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer bg-white text-[#3B0764] hover:bg-gray-100 transition-all duration-150" onClick={() => importFileRef.current?.click()}>
-        Import JSON
-      </button>
       <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer font-bold text-main-text bg-gray-100 hover:bg-gray-200 transition-all duration-150" onClick={() => setWorkbook((current) => (current ? recalculateDerivedData(current, current) : current))}>
         Refresh totals
       </button>
-      <button type="button" className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150" onClick={() => { if (workbook) void downloadWorkbookData(workbook) }}>
+      <a className="inline-flex justify-center items-center py-2 px-4 border-0 rounded-md cursor-pointer text-white font-bold bg-indigo hover:bg-indigoHover transition-all duration-150" href="/api/download">
         Download Data
-      </button>
+      </a>
     </div>
   ) : (
     <div className="flex flex-wrap gap-2.5">
@@ -1774,7 +1748,7 @@ export default function Admin({ initialTab }: { initialTab?: TabId } = {}) {
               <span className="inline-flex mb-2 text-[#7C3AED] uppercase tracking-uppercase text-xs-tiny">Project data</span>
               <h2 className="text-[#3B0764]">{isAdmin ? 'Admin control room' : 'Employee workspace'}</h2>
               <p className="text-text-light">
-                Data is loaded from local JSON storage in your browser.
+                Data is loaded live from PostgreSQL through the backend API.
               </p>
             </div>
             {topActions}
